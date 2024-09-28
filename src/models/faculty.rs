@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::forms::users::Profile;
 
-use super::{students::Department, users::User};
+use super::students::Department;
 
 #[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize)]
 #[ExistingTypePath = "crate::schema::sql_types::Title"]

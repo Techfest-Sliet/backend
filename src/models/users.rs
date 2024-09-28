@@ -1,19 +1,20 @@
-use std::fmt::Display;
+use std::{fmt::Display, sync::Arc};
 
 use axum::{
     async_trait,
-    extract::{FromRequestParts, Query},
+    extract::FromRequestParts,
 };
 use axum_extra::extract::cookie::Cookie;
 use diesel::prelude::*;
 use http::{request::Parts, StatusCode};
 use jsonwebtoken::Validation;
-use rust_gmail::GmailClient;
+use mail_send::{mail_builder::MessageBuilder, SmtpClient};
 use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
 
 use crate::{
     auth::{UserClaims, KEYS},
-    forms::users::{VerificationClaims, VerificationQuery},
+    forms::users::VerificationClaims,
     schema::users,
     state::SiteState,
 };
@@ -67,20 +68,27 @@ pub struct User {
 static EMAIL_TEMPLATE: &'static str = include_str!("verification_email.html");
 
 impl User {
-    pub async fn send_verification_email(&self, mailer: &GmailClient) -> rust_gmail::error::Result<()> {
+    pub async fn send_verification_email<
+        T: Unpin + tokio::io::AsyncRead + tokio::io::AsyncWrite,
+    >(
+        &self,
+        mailer: Arc<Mutex<SmtpClient<T>>>,
+    ) -> mail_send::Result<()> {
         let verification_claims: u64 = VerificationClaims {
             id: self.id,
             pass_hash: self.password_hash.clone(),
         }
         .into();
-        mailer.send_email(
-            &self.email,
-            "Email verification for techfest 24",
-            &EMAIL_TEMPLATE.replace(
-                "{verification_query}",
-                &format!("?id={}&token={}", self.id, verification_claims),
-            ),
-        ).await
+        let replace = EMAIL_TEMPLATE.replace(
+            "{verification_query}",
+            &format!("?id={}&token={}", self.id, verification_claims),
+        );
+        let message = MessageBuilder::new()
+            .from(("Techfest", "techfest@sliet.ac.in"))
+            .to((self.name.clone(), self.email.clone()))
+            .subject("Email verification for techfest 24")
+            .html_body(&replace);
+        mailer.lock().await.send(message).await
     }
 }
 

@@ -1,5 +1,5 @@
 use diesel::{AsChangeset, Insertable, Queryable, Selectable};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[derive(Deserialize, Queryable, Debug, Clone)]
 #[diesel(table_name = crate::schema::teams)]

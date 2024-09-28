@@ -1,7 +1,5 @@
 use argon2::{
-    password_hash::{
-        self, rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
-    },
+    password_hash::{self, rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
 use serde::Deserialize;

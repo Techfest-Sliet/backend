@@ -2,7 +2,6 @@ use axum::{
     extract::{Query, State},
     Form, Json,
 };
-use axum_macros::debug_handler;
 use diesel::prelude::*;
 use http::StatusCode;
 

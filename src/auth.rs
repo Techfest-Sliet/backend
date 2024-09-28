@@ -2,7 +2,7 @@ use std::time::{Duration, SystemTime, SystemTimeError};
 
 use argon2::{
     password_hash::{
-        self, rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
+         PasswordHash,  PasswordVerifier, 
     },
     Argon2,
 };
@@ -15,7 +15,6 @@ use diesel::prelude::*;
 use http::StatusCode;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header};
 use once_cell::sync::Lazy;
-use rust_gmail::GmailClient;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -81,7 +80,7 @@ pub async fn student_sign_up(
         log::error!("{v:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    user.send_verification_email(&state.mailer)
+    user.send_verification_email(state.mailer)
         .await
         .map_err(|e| {
             log::error!("{e:?}");
@@ -128,7 +127,7 @@ pub async fn faculty_sign_up(
         log::error!("{v:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    user.send_verification_email(&state.mailer)
+    user.send_verification_email(state.mailer)
         .await
         .map_err(|e| {
             log::error!("{e:?}");

@@ -8,7 +8,7 @@ use axum::{
 };
 use axum_macros::debug_handler;
 use base64::{prelude::BASE64_STANDARD_NO_PAD, Engine};
-use diesel::{connection::DefaultLoadingMode, prelude::*};
+use diesel::prelude::*;
 use highway::HighwayHash;
 use http::{header, HeaderMap, StatusCode};
 use tokio_util::io::ReaderStream;
@@ -315,19 +315,24 @@ pub async fn set_workshop_photo(
             StatusCode::BAD_REQUEST
         })?;
     let photo = photo.thumbnail(512, 512);
-    photo.save_with_format(
-        format!(
-            "{}/{}",
-            state.image_dir.to_string_lossy(),
-            BASE64_STANDARD_NO_PAD.encode(
-                hash.map(|v| v.to_le_bytes())
-                    .into_iter()
-                    .flatten()
-                    .collect::<Vec<u8>>()
-            )
-        ),
-        image::ImageFormat::Avif,
-    );
+    photo
+        .save_with_format(
+            format!(
+                "{}/{}",
+                state.image_dir.to_string_lossy(),
+                BASE64_STANDARD_NO_PAD.encode(
+                    hash.map(|v| v.to_le_bytes())
+                        .into_iter()
+                        .flatten()
+                        .collect::<Vec<u8>>()
+                )
+            ),
+            image::ImageFormat::Avif,
+        )
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::BAD_REQUEST
+        })?;
     diesel::update(workshops::table)
         .filter(workshops::id.eq(user.id))
         .set(
@@ -340,7 +345,11 @@ pub async fn set_workshop_photo(
         .execute(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
-        })?);
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::BAD_REQUEST
+        })?;
     Ok(())
 }
 
@@ -607,7 +616,7 @@ pub async fn mark_workshop_attendance(
         .map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
-        });
+        })?;
     Ok(())
 }
 

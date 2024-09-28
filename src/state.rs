@@ -2,9 +2,13 @@ use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
 use highway::HighwayHasher;
-use rust_gmail::GmailClient;
+use mail_send::{Credentials, SmtpClient, SmtpClientBuilder};
 use std::env;
 use std::path::PathBuf;
+use std::sync::Arc;
+use tokio::net::TcpStream;
+use tokio::sync::Mutex;
+use tokio_rustls::client::TlsStream;
 
 use crate::forms::student::StudentSignUp;
 use crate::models::students::Department;
@@ -16,15 +20,19 @@ pub struct SiteState {
     pub connection: Pool<ConnectionManager<PgConnection>>,
     pub bulk_hasher: HighwayHasher,
     pub image_dir: PathBuf,
-    pub mailer: GmailClient,
+    pub mailer: Arc<Mutex<SmtpClient<TlsStream<TcpStream>>>>,
 }
 
 impl SiteState {
     pub async fn init() -> anyhow::Result<Self> {
-        let email_client: GmailClient =
-            GmailClient::builder("service_account.json", "techfest@sliet.ac.in")?
-                .build()
-                .await?;
+        let email_client = SmtpClientBuilder::new("smtp.gmail.com", 587)
+            .implicit_tls(false)
+            .credentials(Credentials::new_xoauth2(
+                env::var("GOOGLE_CLIENT_ID")?.as_str(),
+                env::var("GOOGLE_SECRET")?.as_str(),
+            ))
+            .connect()
+            .await?;
         let database_url = env::var("DATABASE_URL")?;
         let manager = ConnectionManager::<PgConnection>::new(database_url);
         let pool = Pool::builder().test_on_check_out(true).build(manager)?;
@@ -78,7 +86,7 @@ impl SiteState {
             connection: pool,
             bulk_hasher: HighwayHasher::default(),
             image_dir: env::var("IMAGE_URL").unwrap_or("images/".into()).into(),
-            mailer: email_client,
+            mailer: Arc::from(Mutex::from(email_client)),
         })
     }
 }

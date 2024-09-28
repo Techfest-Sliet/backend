@@ -143,19 +143,24 @@ pub async fn set_domain_photo(
             StatusCode::BAD_REQUEST
         })?;
     let photo = photo.thumbnail(512, 512);
-    photo.save_with_format(
-        format!(
-            "{}/{}",
-            state.image_dir.to_string_lossy(),
-            BASE64_STANDARD_NO_PAD.encode(
-                hash.map(|v| v.to_le_bytes())
-                    .into_iter()
-                    .flatten()
-                    .collect::<Vec<u8>>()
-            )
-        ),
-        image::ImageFormat::Avif,
-    );
+    photo
+        .save_with_format(
+            format!(
+                "{}/{}",
+                state.image_dir.to_string_lossy(),
+                BASE64_STANDARD_NO_PAD.encode(
+                    hash.map(|v| v.to_le_bytes())
+                        .into_iter()
+                        .flatten()
+                        .collect::<Vec<u8>>()
+                )
+            ),
+            image::ImageFormat::Avif,
+        )
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::BAD_REQUEST
+        })?;
     diesel::update(domains::table)
         .filter(domains::id.eq(user.id))
         .set(
@@ -168,7 +173,11 @@ pub async fn set_domain_photo(
         .execute(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
-        })?);
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::BAD_REQUEST
+        })?;
     Ok(())
 }
 
