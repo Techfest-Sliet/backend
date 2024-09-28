@@ -1,0 +1,38 @@
+Participant -> Join Workshop
+Participant -> Join Event
+Participant -> Accept Team Invitation
+Participant -> Download Certificates
+Participant -> Create Team
+Participant -> Spend Points
+Participant.shape: hexagon
+
+Team Leader -> Invite members
+Team Leader -> Distribute Points
+Team Leader -> Remove members
+Team Leader -> Participant
+Team Leader.shape: hexagon
+
+Student Coordinator -> Event
+  Event -> Create
+  Event -> Update
+  Event -> Delete
+  Event -> Mark Attendance
+Student Coordinator -> Workshop
+  Workshop -> Create
+  Workshop -> Update
+  Workshop -> Delete
+  Workshop -> Mark Attendance
+Student Coordinator -> Team Leader
+Student Coordinator.shape: hexagon
+
+Faculty Coordinator -> Appoint Student Coordinator
+Faculty Coordinator -> Student Coordinator
+Faculty Coordinator.shape: hexagon
+
+Super Admin -> Domain
+  Domain -> Create
+  Domain -> Update
+  Domain -> Delete
+Super Admin -> Appoint Faculty Coordinator
+Super Admin -> Faculty Coordinator
+Super Admin.shape: hexagon

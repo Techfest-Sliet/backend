@@ -1,0 +1,6 @@
+CREATE TABLE students (
+	user_id INTEGER PRIMARY KEY REFERENCES users(id),
+	college TEXT NOT NULL,
+	reg_no TEXT NOT NULL,
+	dept DEPARTMENT NOT NULL
+)

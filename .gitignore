@@ -1,0 +1,5 @@
+/target
+*.svg
+.env
+service_account.json
+Cargo.lock
