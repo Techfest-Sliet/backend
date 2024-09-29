@@ -2,13 +2,13 @@ use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
 use highway::HighwayHasher;
-use mail_send::{Credentials, SmtpClient, SmtpClientBuilder};
+use mail_send::{SmtpClient, SmtpClientBuilder};
+use tokio_rustls::client::TlsStream;
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
-use tokio_rustls::client::TlsStream;
 
 use crate::forms::student::StudentSignUp;
 use crate::models::students::Department;
@@ -27,7 +27,7 @@ impl SiteState {
     pub async fn init() -> anyhow::Result<Self> {
         let email_client = SmtpClientBuilder::new("smtp.gmail.com", 587)
             .implicit_tls(false)
-            .credentials(Credentials::new_xoauth2(
+            .credentials((
                 env::var("GOOGLE_CLIENT_ID")?.as_str(),
                 env::var("GOOGLE_SECRET")?.as_str(),
             ))

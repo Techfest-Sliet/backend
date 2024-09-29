@@ -13,6 +13,7 @@ use tower_http::cors::CorsLayer;
 async fn main() {
     let _ = dotenv();
     pretty_env_logger::init();
+    tokio_rustls::rustls::crypto::aws_lc_rs::default_provider().install_default().unwrap();
     let frontend_url = env::var("FRONTEND_URL").unwrap();
     let state = &mut SiteState::init().await.unwrap();
     let routes = setup_routes()
