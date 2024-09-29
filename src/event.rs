@@ -7,7 +7,7 @@ use axum::{
     Form, Json,
 };
 use axum_macros::debug_handler;
-use base64::{prelude::BASE64_STANDARD_NO_PAD, Engine};
+use base64::{prelude::BASE64_URL_SAFE_NO_PAD, Engine};
 use diesel::prelude::*;
 use highway::HighwayHash;
 use http::{header, HeaderMap, StatusCode};
@@ -322,7 +322,7 @@ pub async fn set_event_photo(
             format!(
                 "{}/{}",
                 state.image_dir.to_string_lossy(),
-                BASE64_STANDARD_NO_PAD.encode(
+                BASE64_URL_SAFE_NO_PAD.encode(
                     hash.map(|v| v.to_le_bytes())
                         .into_iter()
                         .flatten()
@@ -379,7 +379,7 @@ pub async fn get_event_photo(
     let file = match tokio::fs::File::open(format!(
         "{}/{}",
         state.image_dir.to_string_lossy(),
-        BASE64_STANDARD_NO_PAD.encode(photo_hash)
+        BASE64_URL_SAFE_NO_PAD.encode(photo_hash)
     ))
     .await
     {

@@ -52,8 +52,6 @@ impl SiteState {
             let email = inquire::Text::new("Enter your Email")
                 .with_validator(inquire::required!())
                 .prompt()?;
-            let role: Role =
-                inquire::Select::new("User Role:", Role::VARIANTS.to_vec()).prompt()?;
             let password = inquire::Password::new("Password:")
                 .with_display_toggle_enabled()
                 .with_display_mode(inquire::PasswordDisplayMode::Masked)
@@ -67,7 +65,6 @@ impl SiteState {
                 name,
                 dob,
                 email,
-                role,
                 password,
                 phone: contact,
                 college: "SLIET".to_owned(),

@@ -223,3 +223,9 @@ impl<'a: 'static> TryInto<Cookie<'a>> for &UserClaims {
         })
     }
 }
+
+pub async fn logout(
+    cookie_jar: CookieJar,
+) -> CookieJar {
+    cookie_jar.remove("jwt-token")
+}

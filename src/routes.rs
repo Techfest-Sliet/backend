@@ -1,4 +1,5 @@
 use crate::auth::faculty_sign_up;
+use crate::auth::logout;
 use crate::auth::sign_in;
 use crate::auth::student_sign_up;
 use crate::domain::add_domain_faculty_coordinator;
@@ -28,9 +29,12 @@ use crate::event::remove_event_individual_attendance;
 use crate::event::remove_event_team_attendance;
 use crate::event::set_event_photo;
 use crate::profile::change_profile;
+use crate::profile::get_departments;
+use crate::profile::get_faculty_profile;
 use crate::profile::get_individual_team_requests;
 use crate::profile::get_profile;
 use crate::profile::get_profile_photo;
+use crate::profile::get_student_profile;
 use crate::profile::set_profile_photo;
 use crate::profile::verify_user;
 use crate::state::SiteState;
@@ -62,10 +66,13 @@ use axum::{
 pub fn setup_routes() -> Router<SiteState> {
     Router::new()
         .route("/auth/sign_in", post(sign_in))
+        .route("/auth/logout", get(logout))
         .route("/auth/student/sign_up", post(student_sign_up))
         .route("/auth/faculty/sign_up", post(faculty_sign_up))
         .route("/auth/verify", get(verify_user))
         .route("/profile", get(get_profile).patch(change_profile))
+        .route("/profile/student", get(get_student_profile))
+        .route("/profile/faculty", get(get_faculty_profile))
         .route(
             "/profile/photo",
             get(get_profile_photo).post(set_profile_photo),
@@ -146,4 +153,5 @@ pub fn setup_routes() -> Router<SiteState> {
             "/team/request",
             get(get_team_request).post(send_team_request).put(accept_team_request),
         )
+        .route("/departments", get(get_departments))
 }

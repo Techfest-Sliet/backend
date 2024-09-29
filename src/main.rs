@@ -11,18 +11,18 @@ use dotenvy::dotenv;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 
-
 #[tokio::main]
 async fn main() {
     let _ = dotenv();
     pretty_env_logger::init();
-    tokio_rustls::rustls::crypto::aws_lc_rs::default_provider().install_default().unwrap();
-    let frontend_url = env::var("FRONTEND_URL").unwrap();
+    tokio_rustls::rustls::crypto::aws_lc_rs::default_provider()
+        .install_default()
+        .unwrap();
     let state = &mut SiteState::init().await.unwrap();
+    let frontend_url = env::var("FRONTEND_URL").unwrap();
     let routes = setup_routes()
         .with_state(state.clone())
-        .layer(
-            CorsLayer::permissive()
+        .layer(CorsLayer::permissive()
                 .allow_headers([
                     http::header::COOKIE,
                     http::header::ACCESS_CONTROL_ALLOW_ORIGIN,
@@ -43,8 +43,7 @@ async fn main() {
                 .allow_credentials(true)
                 .allow_origin([
                     frontend_url.parse().unwrap(),
-                ]),
-        )
+                ]))
         .layer(CompressionLayer::new().br(true).zstd(true).gzip(true));
     log::info!("Binding to port 3000");
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")

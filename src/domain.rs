@@ -7,7 +7,7 @@ use axum::{
     Form, Json,
 };
 use axum_macros::debug_handler;
-use base64::{prelude::BASE64_STANDARD_NO_PAD, Engine};
+use base64::{prelude::BASE64_URL_SAFE_NO_PAD, Engine};
 use diesel::prelude::*;
 use highway::HighwayHash;
 use http::{header, HeaderMap, StatusCode};
@@ -143,23 +143,22 @@ pub async fn set_domain_photo(
             StatusCode::BAD_REQUEST
         })?;
     let photo = photo.thumbnail(512, 512);
-    photo
-        .save_with_format(
-            format!(
-                "{}/{}",
-                state.image_dir.to_string_lossy(),
-                BASE64_STANDARD_NO_PAD.encode(
-                    hash.map(|v| v.to_le_bytes())
-                        .into_iter()
-                        .flatten()
-                        .collect::<Vec<u8>>()
-                )
-            ),
-            image::ImageFormat::Avif,
+    let dir = format!(
+        "{}/{}",
+        state.image_dir.to_string_lossy(),
+        BASE64_URL_SAFE_NO_PAD.encode(
+            hash.map(|v| v.to_le_bytes())
+                .into_iter()
+                .flatten()
+                .collect::<Vec<u8>>()
         )
+    );
+    log::info!("Saving image to {}", dir);
+    photo
+        .save_with_format(dir, image::ImageFormat::Avif)
         .map_err(|e| {
             log::error!("{e:?}");
-            StatusCode::BAD_REQUEST
+            StatusCode::INTERNAL_SERVER_ERROR
         })?;
     diesel::update(domains::table)
         .filter(domains::id.eq(user.id))
@@ -205,7 +204,7 @@ pub async fn get_domain_photo(
     let file = match tokio::fs::File::open(format!(
         "{}/{}",
         state.image_dir.to_string_lossy(),
-        BASE64_STANDARD_NO_PAD.encode(photo_hash)
+        BASE64_URL_SAFE_NO_PAD.encode(photo_hash)
     ))
     .await
     {

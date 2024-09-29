@@ -15,7 +15,6 @@ pub struct StudentSignUp {
     pub dob: chrono::NaiveDate,
     pub email: String,
     pub phone: String,
-    pub role: Role,
     pub password: String,
     pub college: String,
     pub reg_no: String,

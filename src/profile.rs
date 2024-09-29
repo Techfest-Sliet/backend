@@ -1,4 +1,5 @@
 use base64::prelude::*;
+use std::collections::HashMap;
 use std::io::Cursor;
 
 use axum::body::{Body, Bytes};
@@ -14,9 +15,11 @@ use tokio_util::io::ReaderStream;
 use crate::forms::users::{
     ChangeProfile, GetProfilePhoto, Profile, VerificationClaims, VerificationQuery,
 };
+use crate::models::faculty::Faculty;
+use crate::models::students::{Department, Student};
 use crate::models::team::TeamRequest;
 use crate::models::users::User;
-use crate::schema::{team_requests, users};
+use crate::schema::{faculty, students, team_requests, users};
 use crate::state::SiteState;
 
 pub async fn get_profile(
@@ -81,7 +84,7 @@ pub async fn set_profile_photo(
             format!(
                 "{}/{}",
                 state.image_dir.to_string_lossy(),
-                BASE64_STANDARD_NO_PAD.encode(
+                BASE64_URL_SAFE_NO_PAD.encode(
                     hash.map(|v| v.to_le_bytes())
                         .into_iter()
                         .flatten()
@@ -143,7 +146,7 @@ pub async fn get_profile_photo(
     let file = match tokio::fs::File::open(format!(
         "{}/{}",
         state.image_dir.to_string_lossy(),
-        BASE64_STANDARD_NO_PAD.encode(photo_hash)
+        BASE64_URL_SAFE_NO_PAD.encode(photo_hash)
     ))
     .await
     {
@@ -221,4 +224,48 @@ pub async fn verify_user(
     } else {
         Err(StatusCode::UNAUTHORIZED)
     }
+}
+
+pub async fn get_departments() -> Json<HashMap<String, String>> {
+    Json(HashMap::<String, String>::from_iter(
+        Department::VARIANTS
+            .iter()
+            .map(|v| (format!("{:?}", v), format!("{}", v))),
+    ))
+}
+
+pub async fn get_student_profile(
+    State(state): State<SiteState>,
+    user: User,
+) -> Result<Json<Student>, StatusCode> {
+    students::table
+        .select(Student::as_select())
+        .filter(students::user_id.eq(user.id))
+        .get_result(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
+        .map(|v| Json(v))
+}
+
+pub async fn get_faculty_profile(
+    State(state): State<SiteState>,
+    user: User,
+) -> Result<Json<Faculty>, StatusCode> {
+    faculty::table
+        .select(Faculty::as_select())
+        .filter(faculty::user_id.eq(user.id))
+        .get_result(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
+        .map(|v| Json(v))
 }

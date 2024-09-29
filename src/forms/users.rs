@@ -4,7 +4,7 @@ use diesel::{AsChangeset, Queryable, Selectable};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-use crate::models::users::Role;
+use crate::models::{students::Department, users::Role};
 
 #[derive(Deserialize)]
 pub struct SignInForm {
@@ -34,7 +34,6 @@ pub struct ChangeProfile {
     email: Option<String>,
     phone: Option<String>,
 }
-
 #[derive(Deserialize)]
 pub struct GetProfilePhoto {
     pub id: i32,
