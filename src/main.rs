@@ -1,3 +1,5 @@
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 mod schema;
 use sliet_techfest_backend::routes::setup_routes;
@@ -8,6 +10,7 @@ use std::env;
 use dotenvy::dotenv;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
+
 
 #[tokio::main]
 async fn main() {
