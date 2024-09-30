@@ -42,8 +42,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./target/release/school-record-rust
-        asset_name: school_record_backend
+        asset_path: ./target/release/sliet_techfest_backend
+        asset_name: sliet_techfest_backend
         asset_content_type: application/x-elf
 
     - uses: eregon/publish-release@v1
