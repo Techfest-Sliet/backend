@@ -4,7 +4,7 @@ use diesel::{AsChangeset, Queryable, Selectable};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-use crate::models::{students::Department, users::Role};
+use crate::models::users::Role;
 
 #[derive(Deserialize)]
 pub struct SignInForm {
