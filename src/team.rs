@@ -15,22 +15,41 @@ use crate::{
     state::SiteState,
 };
 
-pub async fn get_team(
+pub async fn get_teams(
     State(state): State<SiteState>,
-    Query(data): Query<TeamId>,
-) -> Result<Json<Team>, StatusCode> {
-    teams::table
-        .select(Team::as_select())
-        .filter(teams::id.eq(data.id))
-        .get_result(&mut state.connection.get().map_err(|e| {
-            log::error!("{e:?}");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?)
-        .map(|v| Json(v))
-        .map_err(|e| {
-            log::error!("{e:?}");
-            StatusCode::NOT_FOUND
-        })
+    user: Option<User>,
+    data: Option<Query<TeamId>>,
+) -> Result<Json<Vec<Team>>, StatusCode> {
+    if let Some(data) = data {
+        teams::table
+            .select(Team::as_select())
+            .filter(teams::id.eq(data.id))
+            .load(&mut state.connection.get().map_err(|e| {
+                log::error!("{e:?}");
+                StatusCode::INTERNAL_SERVER_ERROR
+            })?)
+            .map(|v| Json(v))
+            .map_err(|e| {
+                log::error!("{e:?}");
+                StatusCode::NOT_FOUND
+            })
+    } else if let Some(user) = user {
+        teams::table
+            .inner_join(team_members::table)
+            .select(Team::as_select())
+            .filter(team_members::student_id.eq(user.id))
+            .load(&mut state.connection.get().map_err(|e| {
+                log::error!("{e:?}");
+                StatusCode::INTERNAL_SERVER_ERROR
+            })?)
+            .map(|v| Json(v))
+            .map_err(|e| {
+                log::error!("{e:?}");
+                StatusCode::NOT_FOUND
+            })
+    } else {
+        Err(StatusCode::BAD_REQUEST)
+    }
 }
 
 pub async fn create_team(

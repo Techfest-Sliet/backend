@@ -80,12 +80,6 @@ pub async fn student_sign_up(
         log::error!("{v:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    user.send_verification_email(state.mailer)
-        .await
-        .map_err(|e| {
-            log::error!("{e:?}");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
     let user: User = user
         .insert_into(users::table)
         .returning(User::as_returning())
@@ -96,6 +90,12 @@ pub async fn student_sign_up(
         .map_err(|e| {
             log::error!("{e:?}");
             StatusCode::CONFLICT
+        })?;
+    user.send_verification_email(state.mailer)
+        .await
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
         })?;
     data.to_student(&user)
         .insert_into(students::table)
@@ -127,12 +127,6 @@ pub async fn faculty_sign_up(
         log::error!("{v:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    user.send_verification_email(state.mailer)
-        .await
-        .map_err(|e| {
-            log::error!("{e:?}");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
     let user: User = user
         .insert_into(users::table)
         .returning(User::as_returning())
@@ -143,6 +137,12 @@ pub async fn faculty_sign_up(
         .map_err(|e| {
             log::error!("{e:?}");
             StatusCode::CONFLICT
+        })?;
+    user.send_verification_email(state.mailer)
+        .await
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
         })?;
     data.to_faculty(&user)
         .insert_into(faculty::table)

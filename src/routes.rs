@@ -23,6 +23,7 @@ use crate::event::get_event_photo;
 use crate::event::get_event_team_attendance;
 use crate::event::join_event_individual;
 use crate::event::join_event_team;
+use crate::event::joined_events_individual;
 use crate::event::mark_event_individual_attendance;
 use crate::event::mark_event_team_attendance;
 use crate::event::remove_event_individual_attendance;
@@ -42,7 +43,7 @@ use crate::team::accept_team_request;
 use crate::team::change_team;
 use crate::team::create_team;
 use crate::team::delete_team;
-use crate::team::get_team;
+use crate::team::get_teams;
 use crate::team::get_team_members;
 use crate::team::get_team_request;
 use crate::team::remove_member;
@@ -121,6 +122,7 @@ pub fn setup_routes() -> Router<SiteState> {
         .route("/event/photo", get(get_event_photo).post(set_event_photo))
         .route("/event/join/individual", post(join_event_individual))
         .route("/event/join/team", post(join_event_team))
+        .route("/event/joined/individual", get(joined_events_individual))
         .route(
             "/workshop",
             get(get_workshop)
@@ -143,7 +145,7 @@ pub fn setup_routes() -> Router<SiteState> {
         )
         .route(
             "/team",
-            get(get_team)
+            get(get_teams)
                 .post(create_team)
                 .delete(delete_team)
                 .patch(change_team),

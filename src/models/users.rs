@@ -88,6 +88,8 @@ impl User {
             .to((self.name.clone(), self.email.clone()))
             .subject("Email verification for techfest 24")
             .html_body(&replace);
+        let display_message = message.clone().write_to_string().unwrap();
+        log::info!("Mail being sent is: {}", display_message);
         mailer.lock().await.send(message).await
     }
 }

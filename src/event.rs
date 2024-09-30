@@ -15,6 +15,7 @@ use tokio_util::io::ReaderStream;
 
 use crate::{
     forms::{
+        domains::GetDomainEvent,
         events::{
             AddEventStudentCoordinator, ChangeEvent, CreateEvent, DeleteEvent, EventId,
             EventIndividualAttendance, EventTeamAttendance, GetEventStudentCoordinator,
@@ -34,9 +35,13 @@ use crate::{
     state::SiteState,
 };
 
-pub async fn get_event(State(state): State<SiteState>) -> Result<Json<Vec<Event>>, StatusCode> {
+pub async fn get_event(
+    State(state): State<SiteState>,
+    Query(data): Query<GetDomainEvent>,
+) -> Result<Json<Vec<Event>>, StatusCode> {
     events::table
         .select(Event::as_select())
+        .filter(events::domain_id.eq(data.id))
         .get_results(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
@@ -975,4 +980,23 @@ pub async fn join_event_team(
             StatusCode::NOT_MODIFIED
         })
         .map(|_| ())
+}
+
+pub async fn joined_events_individual(
+    State(state): State<SiteState>,
+    user: User,
+) -> Result<Json<Vec<Event>>, StatusCode> {
+    individual_event_participation::table
+        .inner_join(events::table)
+        .select(Event::as_select())
+        .filter(individual_event_participation::user_id.eq(user.id))
+        .load(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::NOT_MODIFIED
+        })
+        .map(|v| Json(v))
 }
