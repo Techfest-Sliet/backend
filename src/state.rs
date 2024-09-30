@@ -1,14 +1,15 @@
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use highway::HighwayHasher;
 use mail_send::{SmtpClient, SmtpClientBuilder};
-use tokio_rustls::client::TlsStream;
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
+use tokio_rustls::client::TlsStream;
 
 use crate::forms::student::StudentSignUp;
 use crate::models::students::Department;
@@ -36,6 +37,7 @@ impl SiteState {
         let database_url = env::var("DATABASE_URL")?;
         let manager = ConnectionManager::<PgConnection>::new(database_url);
         let pool = Pool::builder().test_on_check_out(true).build(manager)?;
+        run_migrations(&mut pool.get().expect("To get a connection from database"));
         let num_super_admin: i64 = users::table
             .count()
             .filter(users::role.eq(Role::SUPER_ADMIN))
@@ -86,4 +88,15 @@ impl SiteState {
             mailer: Arc::from(Mutex::from(email_client)),
         })
     }
+}
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+
+fn run_migrations(connection: &mut PgConnection) {
+    // This will run the necessary migrations.
+    //
+    // See the documentation for `MigrationHarness` for
+    // all available methods.
+    connection
+        .run_pending_migrations(MIGRATIONS)
+        .expect("To be able to apply migrations");
 }
