@@ -28,7 +28,7 @@ pub struct ChangeDomain {
 #[derive(Queryable, Deserialize, Debug, Clone)]
 #[diesel(table_name = crate::schema::domains)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct GetDomainPhoto {
+pub struct DomainId {
     pub id: i32,
 }
 

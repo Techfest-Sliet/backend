@@ -17,7 +17,7 @@ use crate::{
     forms::{
         domains::{
             AddDomainFacultyCoordinator, AddDomainStudentCoordinator, ChangeDomain, CreateDomain,
-            DeleteDomain, GetDomainFacultyCoordinator, GetDomainPhoto,
+            DeleteDomain, DomainId, GetDomainFacultyCoordinator,
         },
         users::Profile,
     },
@@ -120,6 +120,7 @@ pub async fn change_domain(
 // Not Deleting the image in case some other user also happens to have the same exact image
 pub async fn set_domain_photo(
     State(state): State<SiteState>,
+    data: Query<DomainId>,
     user: User,
     photo: Bytes,
 ) -> Result<(), StatusCode> {
@@ -161,7 +162,7 @@ pub async fn set_domain_photo(
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
     diesel::update(domains::table)
-        .filter(domains::id.eq(user.id))
+        .filter(domains::id.eq(data.id))
         .set(
             domains::photo_hash.eq(hash
                 .map(|v| v.to_le_bytes())
@@ -183,7 +184,7 @@ pub async fn set_domain_photo(
 #[debug_handler]
 pub async fn get_domain_photo(
     State(state): State<SiteState>,
-    Query(data): Query<GetDomainPhoto>,
+    Query(data): Query<DomainId>,
 ) -> impl IntoResponse {
     // `File` implements `AsyncRead`
     let photo_hash = domains::table
