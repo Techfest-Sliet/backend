@@ -7,6 +7,7 @@ use mail_send::{SmtpClient, SmtpClientBuilder};
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio_rustls::client::TlsStream;
@@ -31,7 +32,7 @@ impl SiteState {
             .credentials((
                 env::var("GOOGLE_CLIENT_ID")?.as_str(),
                 env::var("GOOGLE_SECRET")?.as_str(),
-            ))
+            )).timeout(Duration::new(240, 0))
             .connect()
             .await?;
         let database_url = env::var("DATABASE_URL")?;
