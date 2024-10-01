@@ -108,7 +108,7 @@ pub fn setup_routes() -> Router<SiteState> {
                 .patch(change_event),
         )
         .route(
-            "/event/coodinator",
+            "/event/coordinator",
             get(get_event_coordinator).post(add_event_coordinator),
         )
         .route(
@@ -133,7 +133,7 @@ pub fn setup_routes() -> Router<SiteState> {
                 .patch(change_workshop),
         )
         .route(
-            "/workshop/coodinator",
+            "/workshop/coordinator",
             get(get_workshop_coordinator).post(add_workshop_coordinator),
         )
         .route(
