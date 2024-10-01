@@ -17,6 +17,7 @@ use crate::event::change_event;
 use crate::event::create_event;
 use crate::event::delete_event;
 use crate::event::get_event;
+use crate::event::get_events_by_domain;
 use crate::event::get_event_coordinator;
 use crate::event::get_event_individual_attendance;
 use crate::event::get_event_photo;
@@ -86,6 +87,7 @@ pub fn setup_routes() -> Router<SiteState> {
                 .delete(delete_domain)
                 .patch(change_domain),
         )
+        .route("/domain/event", get(get_events_by_domain))
         .route(
             "/domain/coordinator/faculty",
             get(get_domain_faculty_coordinator).post(add_domain_faculty_coordinator),

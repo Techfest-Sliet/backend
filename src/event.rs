@@ -37,6 +37,24 @@ use crate::{
 
 pub async fn get_event(
     State(state): State<SiteState>,
+    Query(data): Query<EventId>,
+) -> Result<Json<Event>, StatusCode> {
+    events::table
+        .select(Event::as_select())
+        .filter(events::id.eq(data.id))
+        .get_result(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map(|v| Json(v))
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
+}
+
+pub async fn get_events_by_domain(
+    State(state): State<SiteState>,
     Query(data): Query<GetDomainEvent>,
 ) -> Result<Json<Vec<Event>>, StatusCode> {
     events::table
