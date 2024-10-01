@@ -1,9 +1,7 @@
 use std::time::{Duration, SystemTime, SystemTimeError};
 
 use argon2::{
-    password_hash::{
-         PasswordHash,  PasswordVerifier, 
-    },
+    password_hash::{PasswordHash, PasswordVerifier},
     Argon2,
 };
 use axum::{extract::State, Form};
@@ -118,6 +116,15 @@ pub async fn student_sign_up(
     Ok(cookie_jar.add(cookie))
 }
 
+pub async fn resend_email(State(state): State<SiteState>, user: User) -> Result<(), StatusCode> {
+    user.send_verification_email(state.mailer)
+        .await
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
+}
+
 pub async fn faculty_sign_up(
     State(state): State<SiteState>,
     cookie_jar: CookieJar,
@@ -224,8 +231,6 @@ impl<'a: 'static> TryInto<Cookie<'a>> for &UserClaims {
     }
 }
 
-pub async fn logout(
-    cookie_jar: CookieJar,
-) -> CookieJar {
+pub async fn logout(cookie_jar: CookieJar) -> CookieJar {
     cookie_jar.remove("jwt-token")
 }

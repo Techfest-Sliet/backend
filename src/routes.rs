@@ -1,5 +1,6 @@
 use crate::auth::faculty_sign_up;
 use crate::auth::logout;
+use crate::auth::resend_email;
 use crate::auth::sign_in;
 use crate::auth::student_sign_up;
 use crate::domain::add_domain_faculty_coordinator;
@@ -71,7 +72,7 @@ pub fn setup_routes() -> Router<SiteState> {
         .route("/auth/logout", get(logout))
         .route("/auth/student/sign_up", post(student_sign_up))
         .route("/auth/faculty/sign_up", post(faculty_sign_up))
-        .route("/auth/verify", get(verify_user))
+        .route("/auth/verify", get(verify_user).post(resend_email))
         .route("/profile", get(get_profile).patch(change_profile))
         .route("/profile/student", get(get_student_profile))
         .route("/profile/faculty", get(get_faculty_profile))
