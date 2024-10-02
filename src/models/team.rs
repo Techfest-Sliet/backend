@@ -26,3 +26,9 @@ pub struct TeamRequest {
     pub team_id: i32,
     pub student_id: i32,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct NewTeamRequest {
+    pub team_id: i32,
+    pub email: String,
+}

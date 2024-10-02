@@ -8,10 +8,10 @@ use http::StatusCode;
 use crate::{
     forms::teams::{ChangeTeam, MemberId, TeamId, TeamName},
     models::{
-        team::{Team, TeamMember, TeamRequest},
+        team::{NewTeamRequest, Team, TeamMember, TeamRequest},
         users::User,
     },
-    schema::{team_members, team_requests, teams},
+    schema::{team_members, team_requests, teams, users},
     state::SiteState,
 };
 
@@ -56,7 +56,7 @@ pub async fn create_team(
     State(state): State<SiteState>,
     user: User,
     Form(data): Form<TeamName>,
-) -> Result<(), StatusCode> {
+) -> Result<i32, StatusCode> {
     if !user.verified {
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -77,11 +77,11 @@ pub async fn create_team(
         is_leader: true,
     }
     .insert_into(team_members::table)
-    .execute(&mut state.connection.get().map_err(|e| {
+    .returning(team_members::team_id)
+    .get_result(&mut state.connection.get().map_err(|e| {
         log::error!("{e:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?)
-    .map(|_| ())
     .map_err(|e| {
         log::error!("{e:?}");
         StatusCode::CONFLICT
@@ -290,7 +290,7 @@ pub async fn accept_team_request(
 pub async fn send_team_request(
     State(state): State<SiteState>,
     user: User,
-    Query(data): Query<TeamRequest>,
+    Query(data): Query<NewTeamRequest>,
 ) -> Result<(), StatusCode> {
     if !user.verified {
         return Err(StatusCode::UNAUTHORIZED);
@@ -310,14 +310,29 @@ pub async fn send_team_request(
     if !is_leader {
         return Err(StatusCode::UNAUTHORIZED);
     }
-    data.insert_into(team_requests::table)
-        .execute(&mut state.connection.get().map_err(|e| {
+    let student_id = users::table
+        .select(users::id)
+        .filter(users::email.eq(data.email))
+        .get_result(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
         })?)
-        .map(|_| ())
         .map_err(|e| {
             log::error!("{e:?}");
             StatusCode::UNAUTHORIZED
-        })
+        })?;
+    TeamRequest {
+        team_id: data.team_id,
+        student_id,
+    }
+    .insert_into(team_requests::table)
+    .execute(&mut state.connection.get().map_err(|e| {
+        log::error!("{e:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?)
+    .map(|_| ())
+    .map_err(|e| {
+        log::error!("{e:?}");
+        StatusCode::UNAUTHORIZED
+    })
 }

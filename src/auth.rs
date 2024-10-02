@@ -232,5 +232,14 @@ impl<'a: 'static> TryInto<Cookie<'a>> for &UserClaims {
 }
 
 pub async fn logout(cookie_jar: CookieJar) -> CookieJar {
-    cookie_jar.remove("jwt-token")
+    cookie_jar.add(
+        Cookie::build(("jwt-token", "a"))
+            .http_only(true)
+            .secure(true)
+            .same_site(SameSite::None)
+            .max_age(Duration::from_secs(60 * 60 * 12).try_into().unwrap())
+            .partitioned(true)
+            .path("/")
+            .build(),
+    )
 }

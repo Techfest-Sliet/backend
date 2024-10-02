@@ -159,4 +159,5 @@ pub fn setup_routes() -> Router<SiteState> {
             get(get_team_request).post(send_team_request).put(accept_team_request),
         )
         .route("/departments", get(get_departments))
+        .route("/search/users", get(search_users))
 }
