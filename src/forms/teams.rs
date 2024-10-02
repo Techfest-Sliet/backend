@@ -8,11 +8,11 @@ pub struct TeamId {
     pub id: i32
 }
 
-#[derive(Deserialize, Insertable, Queryable, Debug, Clone)]
-#[diesel(table_name = crate::schema::teams)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct TeamName {
-    pub name: String
+#[derive(Deserialize, Debug, Clone)]
+pub struct NewTeamReq {
+    pub name: String,
+    pub members: Vec<String>,
+
 }
 
 #[derive(Deserialize, AsChangeset, Queryable, Debug, Clone)]

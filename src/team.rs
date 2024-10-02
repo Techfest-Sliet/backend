@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use http::StatusCode;
 
 use crate::{
-    forms::teams::{ChangeTeam, MemberId, TeamId, TeamName},
+    forms::teams::{ChangeTeam, MemberId, NewTeamReq, TeamId},
     models::{
         team::{NewTeamRequest, Team, TeamMember, TeamRequest},
         users::User,
@@ -55,8 +55,8 @@ pub async fn get_teams(
 pub async fn create_team(
     State(state): State<SiteState>,
     user: User,
-    Form(data): Form<TeamName>,
-) -> Result<i32, StatusCode> {
+    Form(data): Form<NewTeamReq>,
+) -> Result<(), StatusCode> {
     if !user.verified {
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -82,10 +82,40 @@ pub async fn create_team(
         log::error!("{e:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?)
+    .map(|_| ())
     .map_err(|e| {
         log::error!("{e:?}");
         StatusCode::CONFLICT
-    })
+    });
+
+    for member in data.members.into_iter() {
+        let student_id = users::table
+            .select(users::id)
+            .filter(users::email.eq(member))
+            .get_result(&mut state.connection.get().map_err(|e| {
+                log::error!("{e:?}");
+                StatusCode::INTERNAL_SERVER_ERROR
+            })?)
+            .map_err(|e| {
+                log::error!("{e:?}");
+                StatusCode::UNAUTHORIZED
+            })?;
+        TeamRequest {
+            team_id,
+            student_id,
+        }
+        .insert_into(team_requests::table)
+        .execute(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map(|_| ())
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::UNAUTHORIZED
+        })?;
+    }
+    Ok(())
 }
 
 pub async fn delete_team(
