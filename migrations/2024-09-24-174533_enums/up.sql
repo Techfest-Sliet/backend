@@ -11,6 +11,7 @@ CREATE TYPE DEPARTMENT AS ENUM (
 	'CT',
 	'CEN',
 	'ECE',
+	"EIE",
 	'FET',
 	'MECH',
 	'DS',

@@ -13,6 +13,7 @@ pub enum Department {
     CT,
     CEN,
     ECE,
+    EIE,
     FET,
     MECH,
     DS,
@@ -23,11 +24,12 @@ pub enum Department {
 }
 
 impl Department {
-    pub const VARIANTS: [Self; 11] = [
+    pub const VARIANTS: [Self; 12] = [
         Self::CS,
         Self::CT,
         Self::CEN,
         Self::ECE,
+        Self::EIE,
         Self::FET,
         Self::MECH,
         Self::DS,
@@ -45,6 +47,7 @@ impl Display for Department {
             Department::CT => "Chemical Technology",
             Department::CEN => "Civil Engineering",
             Department::ECE => "Electronics and Communication Engineering",
+            Department::EIE => "Instrumentation Engineering",
             Department::FET => "Food Engineering and Technology",
             Department::MECH => "Mechanical Engineering",
             Department::DS => "Disability Studies",
