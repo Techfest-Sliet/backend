@@ -1,4 +1,3 @@
--- This file should undo anything in `up.sql`
 
 CREATE TYPE DEPARTMENT_NEW AS ENUM (
 	'CS',
@@ -14,14 +13,21 @@ CREATE TYPE DEPARTMENT_NEW AS ENUM (
 	'CHM'
 );
 
-UPDATE FROM users WHERE role='EIE' SET role = "CS";
+UPDATE students SET dept = 'CS' WHERE dept='EIE';
+UPDATE faculty SET dept = 'CS' WHERE dept='EIE';
 
--- Convert to new type, casting via text representation
-ALTER TABLE users 
-  ALTER COLUMN role TYPE DEPARTMENT_NEW 
-    USING (power::text::DEPARTMENT_NEW);
+ALTER TABLE students 
+  ALTER COLUMN dept TYPE text ;
 
--- and swap the types
+ALTER TABLE students 
+  ALTER COLUMN dept TYPE DEPARTMENT_NEW USING dept::DEPARTMENT_NEW;
+
+ALTER TABLE faculty 
+  ALTER COLUMN dept TYPE text ;
+
+ALTER TABLE faculty 
+  ALTER COLUMN dept TYPE DEPARTMENT_NEW USING dept::DEPARTMENT_NEW ;
+
 DROP TYPE DEPARTMENT;
 
 ALTER TYPE DEPARTMENT_NEW RENAME TO DEPARTMENT;

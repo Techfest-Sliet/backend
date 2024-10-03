@@ -7,7 +7,7 @@ edition = "2021"
 anyhow = "1.0.89"
 argon2 = "0.5.3"
 axum = { version = "0.7.6", features = ["http2"] }
-axum-extra = { version = "0.9.4", features = ["cookie"] }
+axum-extra = { version = "0.9.4", features = ["cookie", "form", "query"] }
 axum-macros = "0.4.2"
 base64 = "0.22.1"
 chrono = { version = "0.4.38", features = ["serde"] }

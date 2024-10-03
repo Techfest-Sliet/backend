@@ -32,3 +32,22 @@ pub struct NewTeamRequest {
     pub team_id: i32,
     pub email: String,
 }
+
+#[derive(Serialize, Debug, Clone)]
+pub struct TeamResponse {
+    pub team_id: i32,
+    pub leader_name: String,
+    pub team_name: String,
+}
+
+
+#[derive(Serialize, Debug, Clone)]
+pub struct TeamMemberResp {
+    pub team_id: i32,
+    pub student_id: i32,
+    pub is_leader: bool,
+    pub team_name: String,
+    pub name: String,
+    pub verified: bool,
+    pub email: String,
+}

@@ -48,6 +48,7 @@ use crate::team::delete_team;
 use crate::team::get_team_members;
 use crate::team::get_team_request;
 use crate::team::get_teams;
+use crate::team::reject_team_request;
 use crate::team::remove_member;
 use crate::team::send_team_request;
 use crate::workshop::add_workshop_coordinator;
@@ -160,6 +161,7 @@ pub fn setup_routes() -> Router<SiteState> {
             "/team/request",
             get(get_team_request)
                 .post(send_team_request)
+                .delete(reject_team_request)
                 .put(accept_team_request),
         )
         .route("/departments", get(get_departments))

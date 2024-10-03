@@ -4,7 +4,7 @@ use axum::{async_trait, extract::FromRequestParts};
 use axum_extra::extract::cookie::Cookie;
 use diesel::{
     prelude::*,
-    r2d2::{ConnectionManager, ManageConnection, Pool},
+    r2d2::{ConnectionManager, Pool},
 };
 use http::{request::Parts, StatusCode};
 use jsonwebtoken::Validation;
