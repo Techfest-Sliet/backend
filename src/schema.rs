@@ -223,7 +223,7 @@ diesel::joinable!(students -> users (user_id));
 diesel::joinable!(team_event_participations -> events (event_id));
 diesel::joinable!(team_event_participations -> teams (team_id));
 diesel::joinable!(team_members -> students (student_id));
-diesel::joinable!(team_members -> users (team_id));
+diesel::joinable!(team_members -> teams (team_id));
 diesel::joinable!(team_requests -> students (student_id));
 diesel::joinable!(team_requests -> teams (team_id));
 diesel::joinable!(workshop_participation -> users (user_id));

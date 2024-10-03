@@ -36,8 +36,8 @@ pub async fn get_teams(
             })
     } else if let Some(user) = user {
         log::info!("{user:#?}");
-        teams::table
-            .inner_join(team_members::table)
+        team_members::table
+            .inner_join(teams::table)
             .select(Team::as_select())
             .filter(team_members::student_id.eq(user.id))
             .load(&mut state.connection.get().map_err(|e| {
@@ -93,7 +93,7 @@ pub async fn create_team(
 
             log::info!("{:?}", data.members.clone());
             if let Some(v) = data.members.first() {
-                if !v.is_empty() || data.members.len() < 4 {
+                if !v.is_empty() && data.members.len() < 4 {
                     for member in data.members.into_iter() {
                         let student_id = users::table
                             .select(users::id)
@@ -215,16 +215,17 @@ pub async fn get_team_members(
         })?)
         .map(|v| {
             Json(
-                v.into_iter().map(|(team, user, member)| TeamMemberResp {
-                    team_id: team.id,
-                    student_id: user.id,
-                    is_leader: member.is_leader,
-                    team_name: team.name,
-                    name: user.name,
-                    verified: user.verified,
-                    email: user.email,
-                })
-                .collect::<Vec<TeamMemberResp>>(),
+                v.into_iter()
+                    .map(|(team, user, member)| TeamMemberResp {
+                        team_id: team.id,
+                        student_id: user.id,
+                        is_leader: member.is_leader,
+                        team_name: team.name,
+                        name: user.name,
+                        verified: user.verified,
+                        email: user.email,
+                    })
+                    .collect::<Vec<TeamMemberResp>>(),
             )
         })
         .map_err(|e| {

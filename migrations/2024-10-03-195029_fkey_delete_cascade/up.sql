@@ -12,4 +12,4 @@ ALTER TABLE faculty
 ALTER TABLE team_members
   DROP CONSTRAINT team_members_team_id_fkey,
   ADD CONSTRAINT team_members_team_id_fkey FOREIGN KEY (team_id)
-      REFERENCES users(id) ON DELETE CASCADE;
+      REFERENCES teams(id) ON DELETE CASCADE;
