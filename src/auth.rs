@@ -68,9 +68,7 @@ pub async fn student_sign_up(
     Form(data): Form<StudentSignUp>,
 ) -> Result<CookieJar, StatusCode> {
     if let Some((_, email_domain)) = data.email.rsplit_once('@') {
-        if email_domain.to_lowercase() != "sliet.ac.in" {
-            return Err(StatusCode::UNAUTHORIZED);
-        }
+        log::info!("{:?} Not from sliet is being registered", data.email);
     } else {
         return Err(StatusCode::BAD_REQUEST);
     }
