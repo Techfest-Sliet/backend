@@ -47,7 +47,11 @@ jobs:
         asset_path: ./target/release/sliet_techfest_backend
         asset_name: sliet_techfest_backend
         asset_content_type: application/x-elf
-
+    - name: Cache build artifacts
+      uses: actions/cache@v2
+      with:
+        path: |
+          **/target
     - uses: eregon/publish-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
