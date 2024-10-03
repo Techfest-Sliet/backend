@@ -76,7 +76,7 @@ pub async fn create_event(
     user: User,
     Form(data): Form<CreateEvent>,
 ) -> Result<Json<Event>, StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -131,7 +131,7 @@ pub async fn delete_event(
     user: User,
     Form(data): Form<DeleteEvent>,
 ) -> Result<Json<Event>, StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -187,7 +187,7 @@ pub async fn change_event(
     user: User,
     Form(data): Form<ChangeEvent>,
 ) -> Result<Json<Event>, StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -268,7 +268,7 @@ pub async fn set_event_photo(
     Query(data): Query<EventId>,
     photo: Bytes,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -457,7 +457,7 @@ pub async fn add_event_coordinator(
     user: User,
     Form(data): Form<AddEventStudentCoordinator>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -556,7 +556,7 @@ pub async fn mark_event_individual_attendance(
     user: User,
     Form(data): Form<EventIndividualAttendance>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -635,7 +635,7 @@ pub async fn remove_event_individual_attendance(
     user: User,
     Form(data): Form<EventIndividualAttendance>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -790,7 +790,7 @@ pub async fn mark_event_team_attendance(
     user: User,
     Form(data): Form<EventIndividualAttendance>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -869,7 +869,7 @@ pub async fn remove_event_team_attendance(
     user: User,
     Form(data): Form<EventIndividualAttendance>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -949,7 +949,7 @@ pub async fn join_event_individual(
     user: User,
     Form(data): Form<EventId>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     EventIndividualAttendance {

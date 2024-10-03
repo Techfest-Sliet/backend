@@ -52,7 +52,6 @@ pub struct WorkshopId {
     pub id: i32,
 }
 
-
 #[derive(Queryable, Deserialize, Debug, Clone)]
 #[diesel(table_name = crate::schema::workshops)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -75,4 +74,3 @@ pub struct WorkshopIndividualAttendance {
     pub user_id: i32,
     pub workshop_id: i32,
 }
-

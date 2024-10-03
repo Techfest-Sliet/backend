@@ -22,7 +22,8 @@ async fn main() {
     let frontend_url = env::var("FRONTEND_URL").unwrap();
     let routes = setup_routes()
         .with_state(state.clone())
-        .layer(CorsLayer::permissive()
+        .layer(
+            CorsLayer::permissive()
                 .allow_headers([
                     http::header::COOKIE,
                     http::header::ACCESS_CONTROL_ALLOW_ORIGIN,
@@ -41,9 +42,8 @@ async fn main() {
                 ])
                 .expose_headers([http::header::CONTENT_TYPE])
                 .allow_credentials(true)
-                .allow_origin([
-                    frontend_url.parse().unwrap(),
-                ]))
+                .allow_origin([frontend_url.parse().unwrap()]),
+        )
         .layer(CompressionLayer::new().br(true).zstd(true).gzip(true));
     log::info!("Binding to port 3000");
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")

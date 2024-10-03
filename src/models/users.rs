@@ -1,11 +1,11 @@
 use std::{fmt::Display, sync::Arc};
 
-use axum::{
-    async_trait,
-    extract::FromRequestParts,
-};
+use axum::{async_trait, extract::FromRequestParts};
 use axum_extra::extract::cookie::Cookie;
-use diesel::prelude::*;
+use diesel::{
+    prelude::*,
+    r2d2::{ConnectionManager, ManageConnection, Pool},
+};
 use http::{request::Parts, StatusCode};
 use jsonwebtoken::Validation;
 use mail_send::{mail_builder::MessageBuilder, SmtpClient};
@@ -15,7 +15,7 @@ use tokio::sync::Mutex;
 use crate::{
     auth::{UserClaims, KEYS},
     forms::users::VerificationClaims,
-    schema::users,
+    schema::{payments, users},
     state::SiteState,
 };
 #[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize)]
@@ -68,6 +68,29 @@ pub struct User {
 static EMAIL_TEMPLATE: &'static str = include_str!("verification_email.html");
 
 impl User {
+    pub fn is_payment_done(&self, db: &Pool<ConnectionManager<PgConnection>>) -> bool {
+        if let Some((_, "sliet.ac.in")) = self.email.trim_ascii().rsplit_once('@') {
+            true
+        } else {
+            match payments::table
+                .select(payments::verified)
+                .filter(payments::user_id.eq(self.id))
+                .filter(payments::verified.eq(true))
+                .get_result(&mut match db.get() {
+                    Ok(v) => v,
+                    Err(e) => {
+                        log::error!("{e:?}");
+                        return false;
+                    }
+                }) {
+                Ok(v) => v,
+                Err(e) => {
+                    log::error!("{e:?}");
+                    return false;
+                }
+            }
+        }
+    }
     pub async fn send_verification_email<
         T: Unpin + tokio::io::AsyncRead + tokio::io::AsyncWrite,
     >(

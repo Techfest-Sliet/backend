@@ -5,14 +5,20 @@ use serde::Deserialize;
 #[diesel(table_name = crate::schema::teams)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct TeamId {
-    pub id: i32
+    pub id: i32,
+}
+
+#[derive(Insertable, Queryable, Selectable, Deserialize, Debug, Clone)]
+#[diesel(table_name = crate::schema::teams)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct TeamName {
+    pub name: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewTeamReq {
     pub name: String,
     pub members: Vec<String>,
-
 }
 
 #[derive(Deserialize, AsChangeset, Queryable, Debug, Clone)]
@@ -20,7 +26,7 @@ pub struct NewTeamReq {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ChangeTeam {
     pub id: i32,
-    pub name: Option<String>
+    pub name: Option<String>,
 }
 
 #[derive(Insertable, Queryable, Selectable, Deserialize, Debug, Clone)]

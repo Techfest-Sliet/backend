@@ -54,7 +54,7 @@ pub async fn create_workshop(
     user: User,
     Form(data): Form<CreateWorkshop>,
 ) -> Result<Json<Workshop>, StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -109,7 +109,7 @@ pub async fn delete_workshop(
     user: User,
     Form(data): Form<DeleteWorkshop>,
 ) -> Result<Json<Workshop>, StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -165,7 +165,7 @@ pub async fn change_workshop(
     user: User,
     Form(data): Form<ChangeWorkshop>,
 ) -> Result<Json<Workshop>, StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -432,7 +432,7 @@ pub async fn add_workshop_coordinator(
     user: User,
     Form(data): Form<AddWorkshopStudentCoordinator>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -546,7 +546,7 @@ pub async fn mark_workshop_attendance(
     user: User,
     Form(data): Form<WorkshopIndividualAttendance>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     match user.role {
@@ -702,7 +702,7 @@ pub async fn join_workshop(
     user: User,
     Form(data): Form<WorkshopId>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     WorkshopIndividualAttendance {

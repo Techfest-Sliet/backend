@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use http::StatusCode;
 
 use crate::{
-    forms::teams::{ChangeTeam, MemberId, NewTeamReq, TeamId},
+    forms::teams::{ChangeTeam, MemberId, NewTeamReq, TeamId, TeamName},
     models::{
         team::{NewTeamRequest, Team, TeamMember, TeamRequest},
         users::User,
@@ -57,10 +57,10 @@ pub async fn create_team(
     user: User,
     Form(data): Form<NewTeamReq>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
-    let team_id: i32 = data
+    let team_id: i32 = TeamName { name: data.name }
         .insert_into(teams::table)
         .returning(teams::id)
         .get_result(&mut state.connection.get().map_err(|e| {
@@ -77,8 +77,7 @@ pub async fn create_team(
         is_leader: true,
     }
     .insert_into(team_members::table)
-    .returning(team_members::team_id)
-    .get_result(&mut state.connection.get().map_err(|e| {
+    .execute(&mut state.connection.get().map_err(|e| {
         log::error!("{e:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?)
@@ -86,7 +85,7 @@ pub async fn create_team(
     .map_err(|e| {
         log::error!("{e:?}");
         StatusCode::CONFLICT
-    });
+    })?;
 
     for member in data.members.into_iter() {
         let student_id = users::table
@@ -123,7 +122,7 @@ pub async fn delete_team(
     user: User,
     Query(data): Query<TeamId>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     let is_leader: bool = team_members::table
@@ -159,7 +158,7 @@ pub async fn change_team(
     user: User,
     Query(data): Query<ChangeTeam>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     let is_leader: bool = team_members::table
@@ -214,7 +213,7 @@ pub async fn remove_member(
     user: User,
     Query(data): Query<MemberId>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     let is_leader: bool = team_members::table
@@ -285,7 +284,7 @@ pub async fn accept_team_request(
     user: User,
     Query(data): Query<TeamId>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     let request: TeamRequest = team_requests::table
@@ -322,7 +321,7 @@ pub async fn send_team_request(
     user: User,
     Query(data): Query<NewTeamRequest>,
 ) -> Result<(), StatusCode> {
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     let is_leader: bool = team_members::table

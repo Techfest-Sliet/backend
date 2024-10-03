@@ -78,6 +78,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    payments (payment_id) {
+        user_id -> Int4,
+        payment_id -> Text,
+        payment_amount -> Int4,
+        verified -> Bool,
+    }
+}
+
+diesel::table! {
     sponsors (id) {
         id -> Int4,
         name -> Text,
@@ -203,6 +212,7 @@ diesel::joinable!(faculty_coordinators -> domains (domain_id));
 diesel::joinable!(faculty_coordinators -> faculty (faculty_id));
 diesel::joinable!(individual_event_participation -> events (event_id));
 diesel::joinable!(individual_event_participation -> users (user_id));
+diesel::joinable!(payments -> users (user_id));
 diesel::joinable!(student_domain_coordinators -> domains (domain_id));
 diesel::joinable!(student_domain_coordinators -> students (student_id));
 diesel::joinable!(student_event_coordinators -> events (event_id));
@@ -226,6 +236,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     faculty,
     faculty_coordinators,
     individual_event_participation,
+    payments,
     sponsors,
     student_domain_coordinators,
     student_event_coordinators,

@@ -269,4 +269,3 @@ pub async fn get_faculty_profile(
         })
         .map(|v| Json(v))
 }
-

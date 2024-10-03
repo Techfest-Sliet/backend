@@ -18,11 +18,11 @@ use crate::event::change_event;
 use crate::event::create_event;
 use crate::event::delete_event;
 use crate::event::get_event;
-use crate::event::get_events_by_domain;
 use crate::event::get_event_coordinator;
 use crate::event::get_event_individual_attendance;
 use crate::event::get_event_photo;
 use crate::event::get_event_team_attendance;
+use crate::event::get_events_by_domain;
 use crate::event::join_event_individual;
 use crate::event::join_event_team;
 use crate::event::joined_events_individual;
@@ -45,9 +45,9 @@ use crate::team::accept_team_request;
 use crate::team::change_team;
 use crate::team::create_team;
 use crate::team::delete_team;
-use crate::team::get_teams;
 use crate::team::get_team_members;
 use crate::team::get_team_request;
+use crate::team::get_teams;
 use crate::team::remove_member;
 use crate::team::send_team_request;
 use crate::workshop::add_workshop_coordinator;
@@ -80,7 +80,7 @@ pub fn setup_routes() -> Router<SiteState> {
             "/profile/photo",
             get(get_profile_photo).post(set_profile_photo),
         )
-            .route("/profile/requests", get(get_individual_team_requests))
+        .route("/profile/requests", get(get_individual_team_requests))
         .route(
             "/domain",
             get(get_domain)
@@ -120,7 +120,9 @@ pub fn setup_routes() -> Router<SiteState> {
         )
         .route(
             "/event/attendance/team",
-            get(get_event_team_attendance).post(mark_event_team_attendance).delete(remove_event_team_attendance),
+            get(get_event_team_attendance)
+                .post(mark_event_team_attendance)
+                .delete(remove_event_team_attendance),
         )
         .route("/event/photo", get(get_event_photo).post(set_event_photo))
         .route("/event/join/individual", post(join_event_individual))
@@ -156,7 +158,9 @@ pub fn setup_routes() -> Router<SiteState> {
         .route("/team/member", get(get_team_members).delete(remove_member))
         .route(
             "/team/request",
-            get(get_team_request).post(send_team_request).put(accept_team_request),
+            get(get_team_request)
+                .post(send_team_request)
+                .put(accept_team_request),
         )
         .route("/departments", get(get_departments))
 }

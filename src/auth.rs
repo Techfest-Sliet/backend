@@ -67,7 +67,7 @@ pub async fn student_sign_up(
     cookie_jar: CookieJar,
     Form(data): Form<StudentSignUp>,
 ) -> Result<CookieJar, StatusCode> {
-    if let Some((_, email_domain)) = data.email.rsplit_once('@') {
+    if let Some((_, _)) = data.email.trim_ascii().rsplit_once('@') {
         log::info!("{:?} Not from sliet is being registered", data.email);
     } else {
         return Err(StatusCode::BAD_REQUEST);

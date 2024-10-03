@@ -32,7 +32,8 @@ impl SiteState {
             .credentials((
                 env::var("GOOGLE_CLIENT_ID")?.as_str(),
                 env::var("GOOGLE_SECRET")?.as_str(),
-            )).timeout(Duration::new(240, 0))
+            ))
+            .timeout(Duration::new(240, 0))
             .connect()
             .await?;
         let database_url = env::var("DATABASE_URL")?;

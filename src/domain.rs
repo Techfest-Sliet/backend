@@ -128,7 +128,7 @@ pub async fn set_domain_photo(
         Role::SUPER_ADMIN => {}
         _ => return Err(StatusCode::UNAUTHORIZED),
     }
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
     let hash = state.bulk_hasher.hash256(photo.to_vec().as_slice());
@@ -264,7 +264,7 @@ pub async fn add_domain_faculty_coordinator(
         Role::SUPER_ADMIN => {}
         _ => return StatusCode::UNAUTHORIZED,
     }
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return StatusCode::UNAUTHORIZED;
     }
     match data
@@ -319,7 +319,7 @@ pub async fn add_domain_student_coordinator(
         Role::SUPER_ADMIN => {}
         _ => return StatusCode::UNAUTHORIZED,
     }
-    if !user.verified {
+    if !user.verified || !user.is_payment_done(&state.connection) {
         return StatusCode::UNAUTHORIZED;
     }
     match data

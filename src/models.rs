@@ -1,7 +1,8 @@
-pub mod users;
-pub mod students;
-pub mod faculty;
 pub mod domains;
 pub mod events;
-pub mod workshops;
+pub mod faculty;
+pub mod payments;
+pub mod students;
 pub mod team;
+pub mod users;
+pub mod workshops;

@@ -55,7 +55,6 @@ pub struct EventId {
     pub id: i32,
 }
 
-
 #[derive(Queryable, Deserialize, Debug, Clone)]
 #[diesel(table_name = crate::schema::events)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -86,4 +85,3 @@ pub struct EventTeamAttendance {
     pub team_id: i32,
     pub event_id: i32,
 }
-

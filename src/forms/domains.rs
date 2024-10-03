@@ -39,7 +39,6 @@ pub struct GetDomainEvent {
     pub id: i32,
 }
 
-
 #[derive(Queryable, Deserialize, Debug, Clone)]
 #[diesel(table_name = crate::schema::domains)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -69,4 +68,3 @@ pub struct AddDomainStudentCoordinator {
     pub student_id: i32,
     pub domain_id: i32,
 }
-

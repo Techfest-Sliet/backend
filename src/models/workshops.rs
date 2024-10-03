@@ -21,5 +21,5 @@ pub struct Workshop {
     pub registeration_start: chrono::NaiveDateTime,
     pub registeration_end: chrono::NaiveDateTime,
     pub whatsapp_link: String,
-    pub photo_hash: Option<Vec<u8>>
+    pub photo_hash: Option<Vec<u8>>,
 }
