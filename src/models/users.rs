@@ -72,21 +72,26 @@ impl User {
         if let Some((_, "sliet.ac.in")) = self.email.trim_ascii().rsplit_once('@') {
             true
         } else {
-            match payments::table
-                .select(payments::verified)
-                .filter(payments::user_id.eq(self.id))
-                .filter(payments::verified.eq(true))
-                .get_result(&mut match db.get() {
-                    Ok(v) => v,
-                    Err(e) => {
-                        log::error!("{e:?}");
-                        return false;
+            match self.role {
+                Role::SUPER_ADMIN => true,
+                _ => {
+                    match payments::table
+                        .select(payments::verified)
+                        .filter(payments::user_id.eq(self.id))
+                        .filter(payments::verified.eq(true))
+                        .get_result(&mut match db.get() {
+                            Ok(v) => v,
+                            Err(e) => {
+                                log::error!("{e:?}");
+                                return false;
+                            }
+                        }) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            log::error!("{e:?}");
+                            return false;
+                        }
                     }
-                }) {
-                Ok(v) => v,
-                Err(e) => {
-                    log::error!("{e:?}");
-                    return false;
                 }
             }
         }

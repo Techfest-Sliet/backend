@@ -57,6 +57,7 @@ pub async fn create_workshop(
     if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
     }
+    log::info!("{:?}", user);
     match user.role {
         Role::SUPER_ADMIN => {}
         Role::FACULTY_COORDINATOR => {
