@@ -18,6 +18,8 @@ pub struct CreateWorkshop {
     pub end_time: chrono::NaiveDateTime,
     pub registeration_start: chrono::NaiveDateTime,
     pub registeration_end: chrono::NaiveDateTime,
+    pub prof_name: String,
+    pub prof_title: String,
     pub whatsapp_link: String,
 }
 
@@ -43,6 +45,8 @@ pub struct ChangeWorkshop {
     pub registeration_start: Option<chrono::NaiveDateTime>,
     pub registeration_end: Option<chrono::NaiveDateTime>,
     pub whatsapp_link: Option<String>,
+    pub prof_name: Option<String>,
+    pub prof_title: Option<String>,
 }
 
 #[derive(Queryable, Deserialize, Debug, Clone)]

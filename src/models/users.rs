@@ -74,6 +74,8 @@ impl User {
         } else {
             match self.role {
                 Role::SUPER_ADMIN => true,
+                Role::STUDENT_COORDINATOR => true,
+                Role::FACULTY_COORDINATOR => true,
                 _ => {
                     match payments::table
                         .select(payments::verified)
