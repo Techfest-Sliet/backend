@@ -19,7 +19,17 @@ pub struct Event {
     pub registeration_start: chrono::NaiveDateTime,
     pub registeration_end: chrono::NaiveDateTime,
     pub whatsapp_link: String,
+    pub participation_type: ParticipationType,
     pub photo_hash: Option<Vec<u8>>,
+}
+
+#[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize)]
+#[ExistingTypePath = "crate::schema::sql_types::ParticipationType"]
+#[allow(non_camel_case_types)]
+#[DbValueStyle = "SCREAMING_SNAKE_CASE"]
+pub enum ParticipationType {
+    INDIVIDUAL,
+    TEAM
 }
 
 #[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize)]

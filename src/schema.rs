@@ -10,6 +10,10 @@ pub mod sql_types {
     pub struct Mode;
 
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "participation_type"))]
+    pub struct ParticipationType;
+
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "role"))]
     pub struct Role;
 
@@ -30,6 +34,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::Mode;
+    use super::sql_types::ParticipationType;
 
     events (id) {
         id -> Int4,
@@ -47,6 +52,7 @@ diesel::table! {
         registeration_end -> Timestamp,
         whatsapp_link -> Text,
         photo_hash -> Nullable<Bytea>,
+        participation_type -> ParticipationType,
     }
 }
 

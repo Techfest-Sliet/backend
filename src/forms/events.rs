@@ -3,6 +3,7 @@ use serde::Deserialize;
 use diesel::prelude::*;
 
 use crate::models::events::Mode;
+use crate::models::events::ParticipationType;
 #[derive(Deserialize, Insertable, Queryable, Debug, Clone)]
 #[diesel(table_name = crate::schema::events)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -19,6 +20,7 @@ pub struct CreateEvent {
     pub end_time: chrono::NaiveDateTime,
     pub registeration_start: chrono::NaiveDateTime,
     pub registeration_end: chrono::NaiveDateTime,
+    pub participation_type: ParticipationType,
     pub whatsapp_link: String,
 }
 
@@ -45,6 +47,7 @@ pub struct ChangeEvent {
     pub end_time: Option<chrono::NaiveDateTime>,
     pub registeration_start: Option<chrono::NaiveDateTime>,
     pub registeration_end: Option<chrono::NaiveDateTime>,
+    pub participation_type: Option<ParticipationType>,
     pub whatsapp_link: Option<String>,
 }
 
