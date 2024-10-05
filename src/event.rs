@@ -968,6 +968,28 @@ pub async fn join_event_individual(
     .map(|_| ())
 }
 
+pub async fn leave_event_individual(
+    State(state): State<SiteState>,
+    user: User,
+    Form(data): Form<EventId>,
+) -> Result<(), StatusCode> {
+    if !user.verified || !user.is_payment_done(&state.connection) {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
+    diesel::delete(individual_event_participation::table)
+        .filter(individual_event_participation::user_id.eq(user.id))
+        .filter(individual_event_participation::event_id.eq(data.id))
+        .execute(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::NOT_MODIFIED
+        })
+        .map(|_| ())
+}
+
 pub async fn join_event_team(
     State(state): State<SiteState>,
     user: User,
@@ -989,6 +1011,40 @@ pub async fn join_event_team(
         return Err(StatusCode::UNAUTHORIZED);
     }
     data.insert_into(team_event_participations::table)
+        .execute(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::NOT_MODIFIED
+        })
+        .map(|_| ())
+}
+
+pub async fn leave_event_team(
+    State(state): State<SiteState>,
+    user: User,
+    Form(data): Form<EventTeamAttendance>,
+) -> Result<(), StatusCode> {
+    let is_leader: bool = team_members::table
+        .select(team_members::is_leader)
+        .filter(team_members::team_id.eq(data.team_id))
+        .filter(team_members::student_id.eq(user.id))
+        .get_result(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::UNAUTHORIZED
+        })?;
+    if !is_leader {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
+    diesel::delete(team_event_participations::table)
+        .filter(team_event_participations::team_id.eq(data.team_id))
+        .filter(team_event_participations::event_id.eq(data.event_id))
         .execute(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
