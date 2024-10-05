@@ -127,7 +127,7 @@ impl User {
             Err(e) => {
                 log::error!("{e:?}");
                 *mailer = mailer_config.connect().await?;
-                Ok(())
+                mailer.send(message).await
             }
         }
     }
