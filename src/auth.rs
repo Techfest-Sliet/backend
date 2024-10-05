@@ -87,12 +87,6 @@ pub async fn student_sign_up(
             log::error!("{e:?}");
             StatusCode::CONFLICT
         })?;
-    user.send_verification_email(state.mailer)
-        .await
-        .map_err(|e| {
-            log::error!("{e:?}");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
     data.to_student(&user)
         .insert_into(students::table)
         .execute(&mut state.connection.get().map_err(|e| {
@@ -111,11 +105,17 @@ pub async fn student_sign_up(
         log::error!("{e:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
+    user.send_verification_email(state.mailer, &state.mail_builder)
+        .await
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
     Ok(cookie_jar.add(cookie))
 }
 
 pub async fn resend_email(State(state): State<SiteState>, user: User) -> Result<(), StatusCode> {
-    user.send_verification_email(state.mailer)
+    user.send_verification_email(state.mailer, &state.mail_builder)
         .await
         .map_err(|e| {
             log::error!("{e:?}");
@@ -143,12 +143,6 @@ pub async fn faculty_sign_up(
             log::error!("{e:?}");
             StatusCode::CONFLICT
         })?;
-    user.send_verification_email(state.mailer)
-        .await
-        .map_err(|e| {
-            log::error!("{e:?}");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
     data.to_faculty(&user)
         .insert_into(faculty::table)
         .execute(&mut state.connection.get().map_err(|e| {
@@ -167,6 +161,12 @@ pub async fn faculty_sign_up(
         log::error!("{e:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
+    user.send_verification_email(state.mailer, &state.mail_builder)
+        .await
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
     Ok(cookie_jar.add(cookie))
 }
 

@@ -3,7 +3,8 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use highway::HighwayHasher;
-use mail_send::{SmtpClient, SmtpClientBuilder};
+use mail_send::{Credentials, SmtpClient, SmtpClientBuilder};
+use std::borrow::Cow;
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -23,19 +24,16 @@ pub struct SiteState {
     pub bulk_hasher: HighwayHasher,
     pub image_dir: PathBuf,
     pub mailer: Arc<Mutex<SmtpClient<TlsStream<TcpStream>>>>,
+    pub mail_builder: SmtpClientBuilder<String>,
 }
 
 impl SiteState {
     pub async fn init() -> anyhow::Result<Self> {
-        let email_client = SmtpClientBuilder::new("smtp.gmail.com", 587)
+        let creds = Credentials::new(env::var("GOOGLE_CLIENT_ID")?, env::var("GOOGLE_SECRET")?);
+        let email_client_builder = SmtpClientBuilder::new("smtp.gmail.com".to_string(), 587)
             .implicit_tls(false)
-            .credentials((
-                env::var("GOOGLE_CLIENT_ID")?.as_str(),
-                env::var("GOOGLE_SECRET")?.as_str(),
-            ))
-            .timeout(Duration::new(240, 0))
-            .connect()
-            .await?;
+            .credentials(creds)
+            .timeout(Duration::new(2400, 0));
         let database_url = env::var("DATABASE_URL")?;
         let manager = ConnectionManager::<PgConnection>::new(database_url);
         let pool = Pool::builder().test_on_check_out(true).build(manager)?;
@@ -87,7 +85,8 @@ impl SiteState {
             connection: pool,
             bulk_hasher: HighwayHasher::default(),
             image_dir: env::var("IMAGE_URL").unwrap_or("images/".into()).into(),
-            mailer: Arc::from(Mutex::from(email_client)),
+            mail_builder: email_client_builder.clone(),
+            mailer: Arc::from(Mutex::from(email_client_builder.connect().await?)),
         })
     }
 }

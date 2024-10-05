@@ -8,9 +8,10 @@ use diesel::{
 };
 use http::{request::Parts, StatusCode};
 use jsonwebtoken::Validation;
-use mail_send::{mail_builder::MessageBuilder, SmtpClient};
+use mail_send::{mail_builder::MessageBuilder, SmtpClient, SmtpClientBuilder};
 use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex;
+use tokio::{net::TcpStream, sync::Mutex};
+use tokio_rustls::client::TlsStream;
 
 use crate::{
     auth::{UserClaims, KEYS},
@@ -98,11 +99,10 @@ impl User {
             }
         }
     }
-    pub async fn send_verification_email<
-        T: Unpin + tokio::io::AsyncRead + tokio::io::AsyncWrite,
-    >(
+    pub async fn send_verification_email(
         &self,
-        mailer: Arc<Mutex<SmtpClient<T>>>,
+        mailer: Arc<Mutex<SmtpClient<TlsStream<TcpStream>>>>,
+        mailer_config: &SmtpClientBuilder<String>,
     ) -> mail_send::Result<()> {
         let verification_claims: u64 = VerificationClaims {
             id: self.id,
@@ -120,7 +120,16 @@ impl User {
             .html_body(&replace);
         let display_message = message.clone().write_to_string().unwrap();
         log::info!("Mail being sent is: {}", display_message);
-        mailer.lock().await.send(message).await
+
+        let mut mailer = mailer.lock().await;
+        match mailer.noop().await {
+            Ok(()) => mailer.send(message).await,
+            Err(e) => {
+                log::error!("{e:?}");
+                *mailer = mailer_config.connect().await?;
+                Ok(())
+            }
+        }
     }
 }
 

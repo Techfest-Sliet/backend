@@ -2,6 +2,7 @@ use argon2::{
     password_hash::{self, rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
+use diesel::prelude::*;
 use serde::Deserialize;
 
 use crate::models::{
@@ -53,3 +54,13 @@ impl FacultySignUp {
         }
     }
 }
+
+#[derive(Queryable, Selectable, Deserialize, Debug, Clone)]
+#[diesel(table_name = crate::schema::faculty)]
+#[diesel(belongs_to(User, foreign_key=user_id))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewFacultyProfile {
+    pub title: Title,
+    pub dept: Department,
+}
+

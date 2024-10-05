@@ -33,6 +33,8 @@ use crate::event::remove_event_individual_attendance;
 use crate::event::remove_event_team_attendance;
 use crate::event::set_event_photo;
 use crate::profile::change_profile;
+use crate::profile::create_faculty_profile;
+use crate::profile::create_student_profile;
 use crate::profile::get_departments;
 use crate::profile::get_faculty_profile;
 use crate::profile::get_individual_team_requests;
@@ -76,8 +78,8 @@ pub fn setup_routes() -> Router<SiteState> {
         .route("/auth/faculty/sign_up", post(faculty_sign_up))
         .route("/auth/verify", get(verify_user).post(resend_email))
         .route("/profile", get(get_profile).patch(change_profile))
-        .route("/profile/student", get(get_student_profile))
-        .route("/profile/faculty", get(get_faculty_profile))
+        .route("/profile/student", get(get_student_profile).post(create_student_profile))
+        .route("/profile/faculty", get(get_faculty_profile).post(create_faculty_profile))
         .route(
             "/profile/photo",
             get(get_profile_photo).post(set_profile_photo),

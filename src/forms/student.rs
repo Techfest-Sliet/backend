@@ -2,7 +2,8 @@ use argon2::{
     password_hash::{self, rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
-use serde::Deserialize;
+use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::models::{
     students::{Department, Student},
@@ -52,4 +53,13 @@ impl StudentSignUp {
             dept: self.dept,
         }
     }
+}
+
+#[derive(Queryable, Selectable, Deserialize, Debug, Clone)]
+#[diesel(table_name = crate::schema::students)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewStudentProfile {
+    pub college: String,
+    pub reg_no: String,
+    pub dept: Department,
 }

@@ -12,6 +12,8 @@ use highway::HighwayHash;
 use http::{header, HeaderMap, StatusCode};
 use tokio_util::io::ReaderStream;
 
+use crate::forms::faculty::NewFacultyProfile;
+use crate::forms::student::NewStudentProfile;
 use crate::forms::users::{
     ChangeProfile, GetProfilePhoto, Profile, VerificationClaims, VerificationQuery,
 };
@@ -268,4 +270,52 @@ pub async fn get_faculty_profile(
             StatusCode::INTERNAL_SERVER_ERROR
         })
         .map(|v| Json(v))
+}
+
+pub async fn create_student_profile(
+    State(state): State<SiteState>,
+    user: User,
+    Form(data): Form<NewStudentProfile>,
+) -> Result<Json<Student>, StatusCode> {
+    Student {
+        user_id: user.id,
+        reg_no: data.reg_no,
+        college: data.college,
+        dept: data.dept,
+    }
+    .insert_into(students::table)
+    .returning(Student::as_returning())
+    .get_result(&mut state.connection.get().map_err(|e| {
+        log::error!("{e:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?)
+    .map_err(|e| {
+        log::error!("{e:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })
+    .map(|v| Json(v))
+}
+
+#[debug_handler]
+pub async fn create_faculty_profile(
+    State(state): State<SiteState>,
+    user: User,
+    Form(data): Form<NewFacultyProfile>,
+) -> Result<Json<Faculty>, StatusCode> {
+    Faculty {
+        user_id: user.id,
+        title: data.title,
+        dept: data.dept,
+    }
+    .insert_into(faculty::table)
+    .returning(Faculty::as_returning())
+    .get_result(&mut state.connection.get().map_err(|e| {
+        log::error!("{e:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?)
+    .map_err(|e| {
+        log::error!("{e:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })
+    .map(|v| Json(v))
 }
