@@ -21,6 +21,7 @@ pub enum Department {
     PHY,
     MATHS,
     CHM,
+    EE,
 }
 
 impl Department {
@@ -37,6 +38,7 @@ impl Department {
         Self::PHY,
         Self::MATHS,
         Self::CHM,
+        Self::EE,
     ];
 }
 
@@ -55,6 +57,7 @@ impl Display for Department {
             Department::PHY => "Physics",
             Department::MATHS => "Maths",
             Department::CHM => "Chemistry",
+            Department::EE => "Electrical Engineering",
         })
     }
 }
