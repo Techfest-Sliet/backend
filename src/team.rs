@@ -290,7 +290,6 @@ pub async fn get_team_request(
     };
     query
         .filter(team_requests::student_id.eq(user.id))
-        .filter(team_members::is_leader.eq(true))
         .load(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
