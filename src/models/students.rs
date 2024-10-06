@@ -25,7 +25,7 @@ pub enum Department {
 }
 
 impl Department {
-    pub const VARIANTS: [Self; 12] = [
+    pub const VARIANTS: [Self; 13] = [
         Self::CS,
         Self::CT,
         Self::CEN,

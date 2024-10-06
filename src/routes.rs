@@ -63,6 +63,7 @@ use crate::workshop::get_workshop_attendance;
 use crate::workshop::get_workshop_coordinator;
 use crate::workshop::get_workshop_photo;
 use crate::workshop::join_workshop;
+use crate::workshop::joined_workshops_individual;
 use crate::workshop::mark_workshop_attendance;
 use crate::workshop::set_workshop_photo;
 use axum::{
@@ -152,6 +153,7 @@ pub fn setup_routes() -> Router<SiteState> {
             "/workshop/attendance",
             get(get_workshop_attendance).post(mark_workshop_attendance),
         )
+        .route("/workshop/joined/individual", get(joined_workshops_individual))
         .route(
             "/team",
             get(get_teams)

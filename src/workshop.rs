@@ -721,3 +721,23 @@ pub async fn join_workshop(
     })
     .map(|_| ())
 }
+
+
+pub async fn joined_workshops_individual(
+    State(state): State<SiteState>,
+    user: User,
+) -> Result<Json<Vec<Workshop>>, StatusCode> {
+    workshop_participation::table
+        .inner_join(workshops::table)
+        .select(Workshop::as_select())
+        .filter(workshop_participation::user_id.eq(user.id))
+        .load(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::NOT_MODIFIED
+        })
+        .map(|v| Json(v))
+}
