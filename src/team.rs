@@ -351,7 +351,7 @@ pub async fn accept_team_request(
 pub async fn send_team_request(
     State(state): State<SiteState>,
     user: User,
-    Query(data): Query<NewTeamRequest>,
+    Form(data): Form<NewTeamRequest>,
 ) -> Result<(), StatusCode> {
     if !user.verified || !user.is_payment_done(&state.connection) {
         return Err(StatusCode::UNAUTHORIZED);
