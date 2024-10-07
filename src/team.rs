@@ -346,7 +346,19 @@ pub async fn accept_team_request(
     .map_err(|e| {
         log::error!("{e:?}");
         StatusCode::UNAUTHORIZED
-    })
+    })?;
+    diesel::delete(team_requests::table)
+        .filter(team_requests::team_id.eq(data.id))
+        .filter(team_requests::student_id.eq(user.id))
+        .execute(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map(|_| ())
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
 }
 
 pub async fn send_team_request(

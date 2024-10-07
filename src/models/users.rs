@@ -15,7 +15,7 @@ use tokio_rustls::client::TlsStream;
 
 use crate::{
     auth::{UserClaims, KEYS},
-    forms::users::VerificationClaims,
+    forms::users::{ResetClaims, VerificationClaims},
     schema::{payments, users},
     state::SiteState,
 };
@@ -112,6 +112,35 @@ impl User {
         let replace = EMAIL_TEMPLATE.replace(
             "{verification_query}",
             &format!("?id={}&token={}", self.id, verification_claims),
+        );
+        let message = MessageBuilder::new()
+            .from(("Techfest", "techfest@sliet.ac.in"))
+            .to((self.name.clone(), self.email.clone()))
+            .subject("Email verification for techfest 24")
+            .html_body(&replace);
+        let display_message = message.clone().write_to_string().unwrap();
+        log::info!("Mail being sent is: {}", display_message);
+
+        let mut mailer = mailer.lock().await;
+        match mailer.noop().await {
+            Ok(()) => mailer.send(message).await,
+            Err(e) => {
+                log::error!("{e:?}");
+                *mailer = mailer_config.connect().await?;
+                mailer.send(message).await
+            }
+        }
+    }
+
+    pub async fn send_password_reset_email(
+        &self,
+        mailer: Arc<Mutex<SmtpClient<TlsStream<TcpStream>>>>,
+        mailer_config: &SmtpClientBuilder<String>,
+    ) -> mail_send::Result<()> {
+        let reset_claims: u64 = ResetClaims::from(self).into();
+        let replace = EMAIL_TEMPLATE.replace(
+            "{password_reset}",
+            &format!("?id={}&token={}", self.id, reset_claims),
         );
         let message = MessageBuilder::new()
             .from(("Techfest", "techfest@sliet.ac.in"))

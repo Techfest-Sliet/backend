@@ -15,7 +15,7 @@ use tokio_util::io::ReaderStream;
 use crate::forms::faculty::NewFacultyProfile;
 use crate::forms::student::NewStudentProfile;
 use crate::forms::users::{
-    ChangeProfile, GetProfilePhoto, Profile, VerificationClaims, VerificationQuery,
+    ChangeProfile, GetProfilePhoto, Profile, ResetClaims, ResetSendQuery, VerificationClaims, VerificationQuery
 };
 use crate::models::faculty::Faculty;
 use crate::models::students::{Department, Student};
@@ -188,6 +188,31 @@ pub async fn get_individual_team_requests(
             log::error!("{e:?}");
             StatusCode::UNAUTHORIZED
         })
+}
+
+pub async fn send_reset_mail(
+    State(state): State<SiteState>,
+    Form(data): Form<ResetSendQuery>,
+) -> Result<(), StatusCode> {
+    todo!();
+    let user = users::table.select(User::as_select())
+        .filter(users::email.eq(data.email.trim()))
+        .get_result(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::UNAUTHORIZED
+        })?;
+    let reset_claims: ResetClaims = (&user).into();
+}
+
+pub async fn reset_password(
+    State(state): State<SiteState>,
+    Form(data): Form<VerificationQuery>,
+) -> Result<(), StatusCode> {
+    todo!()
 }
 
 pub async fn verify_user(
