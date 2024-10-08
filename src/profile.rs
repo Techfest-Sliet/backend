@@ -4,7 +4,7 @@ use std::io::Cursor;
 
 use axum::body::{Body, Bytes};
 use axum::extract::{Query, State};
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Redirect};
 use axum::{Form, Json};
 use axum_macros::debug_handler;
 use diesel::prelude::*;
@@ -218,7 +218,7 @@ pub async fn reset_password(
 pub async fn verify_user(
     State(state): State<SiteState>,
     Query(data): Query<VerificationQuery>,
-) -> Result<(), StatusCode> {
+) -> Result<Redirect, StatusCode> {
     let pass_hash: String = users::table
         .select(users::password_hash)
         .filter(users::id.eq(data.id))
@@ -243,7 +243,7 @@ pub async fn verify_user(
                 log::error!("{e:?}");
                 StatusCode::INTERNAL_SERVER_ERROR
             })?)
-            .map(|_| ())
+            .map(|_| Redirect::to("https://techfestsliet.org/"))
             .map_err(|e| {
                 log::error!("{e:?}");
                 StatusCode::UNAUTHORIZED
