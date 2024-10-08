@@ -2,6 +2,9 @@
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 mod schema;
+use axum::extract::Request;
+use axum::middleware::{from_fn, Next};
+use axum::response::Response;
 use sliet_techfest_backend::routes::setup_routes;
 use sliet_techfest_backend::state::SiteState;
 
@@ -10,6 +13,17 @@ use std::env;
 use dotenvy::dotenv;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
+
+async fn add_no_cache(request: Request, next: Next) -> Response {
+    let mut response = next.run(request).await;
+    response.headers_mut().insert(
+        "Cache-Control",
+        "no-cache"
+            .parse()
+            .expect("To parse \"no-cache\" as header value"),
+    );
+    response
+}
 
 #[tokio::main]
 async fn main() {
@@ -22,6 +36,7 @@ async fn main() {
     let frontend_url = env::var("FRONTEND_URL").unwrap();
     let routes = setup_routes()
         .with_state(state.clone())
+        .layer(from_fn(add_no_cache))
         .layer(
             CorsLayer::permissive()
                 .allow_headers([
