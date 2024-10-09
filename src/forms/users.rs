@@ -45,6 +45,14 @@ pub struct VerificationQuery {
     pub token: u64,
 }
 
+#[derive(Deserialize)]
+pub struct PasswordResetQuery {
+    pub id: i32,
+    pub token: u64,
+    pub password: String,
+
+}
+
 #[derive(Deserialize, Clone)]
 pub struct VerificationClaims {
     pub id: i32,

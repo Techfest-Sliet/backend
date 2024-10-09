@@ -1,4 +1,8 @@
+use argon2::password_hash::SaltString;
+use argon2::Argon2;
+use argon2::PasswordHasher;
 use base64::prelude::*;
+use rand::rngs::OsRng;
 use std::collections::HashMap;
 use std::io::Cursor;
 
@@ -15,7 +19,8 @@ use tokio_util::io::ReaderStream;
 use crate::forms::faculty::NewFacultyProfile;
 use crate::forms::student::NewStudentProfile;
 use crate::forms::users::{
-    ChangeProfile, GetProfilePhoto, Profile, ResetClaims, ResetSendQuery, VerificationClaims, VerificationQuery
+    ChangeProfile, GetProfilePhoto, PasswordResetQuery, Profile, ResetClaims, ResetSendQuery,
+    VerificationClaims, VerificationQuery,
 };
 use crate::models::faculty::Faculty;
 use crate::models::students::{Department, Student};
@@ -194,8 +199,8 @@ pub async fn send_reset_mail(
     State(state): State<SiteState>,
     Form(data): Form<ResetSendQuery>,
 ) -> Result<(), StatusCode> {
-    todo!();
-    let user = users::table.select(User::as_select())
+    let user = users::table
+        .select(User::as_select())
         .filter(users::email.eq(data.email.trim()))
         .get_result(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
@@ -205,14 +210,58 @@ pub async fn send_reset_mail(
             log::error!("{e:?}");
             StatusCode::UNAUTHORIZED
         })?;
-    let reset_claims: ResetClaims = (&user).into();
+    user.send_password_reset_email(state.mailer, &state.mail_builder)
+        .await
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
 }
 
 pub async fn reset_password(
     State(state): State<SiteState>,
-    Form(data): Form<VerificationQuery>,
+    Form(data): Form<PasswordResetQuery>,
 ) -> Result<(), StatusCode> {
-    todo!()
+    let user: User = users::table
+        .select(User::as_select())
+        .filter(users::id.eq(data.id))
+        .get_result(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::UNAUTHORIZED
+        })?;
+    let valid_verification_claims: u64 = VerificationClaims {
+        id: user.id,
+        pass_hash: user.password_hash,
+    }
+    .into();
+    if data.token != valid_verification_claims {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
+
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+    let password_hash = argon2
+        .hash_password(data.password.as_bytes(), &salt)
+        .map(|v| v.to_string())
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+    diesel::update(users::table)
+        .set(users::password_hash.eq(password_hash))
+        .execute(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map(|_| ())
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
 }
 
 pub async fn verify_user(

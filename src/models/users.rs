@@ -66,7 +66,8 @@ pub struct User {
     pub password_hash: String,
 }
 
-static EMAIL_TEMPLATE: &'static str = include_str!("verification_email.html");
+static VERIFICATION_EMAIL_TEMPLATE: &'static str = include_str!("verification_email.html");
+static PASSWORD_RESET_EMAIL_TEMPLATE: &'static str = include_str!("password_reset_email.html");
 
 impl User {
     pub fn is_payment_done(&self, db: &Pool<ConnectionManager<PgConnection>>) -> bool {
@@ -109,7 +110,7 @@ impl User {
             pass_hash: self.password_hash.clone(),
         }
         .into();
-        let replace = EMAIL_TEMPLATE.replace(
+        let replace = VERIFICATION_EMAIL_TEMPLATE.replace(
             "{verification_query}",
             &format!("?id={}&token={}", self.id, verification_claims),
         );
@@ -138,14 +139,14 @@ impl User {
         mailer_config: &SmtpClientBuilder<String>,
     ) -> mail_send::Result<()> {
         let reset_claims: u64 = ResetClaims::from(self).into();
-        let replace = EMAIL_TEMPLATE.replace(
+        let replace = PASSWORD_RESET_EMAIL_TEMPLATE.replace(
             "{password_reset}",
             &format!("?id={}&token={}", self.id, reset_claims),
         );
         let message = MessageBuilder::new()
             .from(("Techfest", "techfest@sliet.ac.in"))
             .to((self.name.clone(), self.email.clone()))
-            .subject("Email verification for techfest 24")
+            .subject("Password reset for techfest'24")
             .html_body(&replace);
         let display_message = message.clone().write_to_string().unwrap();
         log::info!("Mail being sent is: {}", display_message);
