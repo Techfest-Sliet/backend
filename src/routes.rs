@@ -41,6 +41,8 @@ use crate::profile::get_individual_team_requests;
 use crate::profile::get_profile;
 use crate::profile::get_profile_photo;
 use crate::profile::get_student_profile;
+use crate::profile::reset_password;
+use crate::profile::send_reset_mail;
 use crate::profile::set_profile_photo;
 use crate::profile::verify_user;
 use crate::state::SiteState;
@@ -78,9 +80,16 @@ pub fn setup_routes() -> Router<SiteState> {
         .route("/auth/student/sign_up", post(student_sign_up))
         .route("/auth/faculty/sign_up", post(faculty_sign_up))
         .route("/auth/verify", get(verify_user).post(resend_email))
+        .route("/profile/password_reset", post(reset_password).put(send_reset_mail))
         .route("/profile", get(get_profile).patch(change_profile))
-        .route("/profile/student", get(get_student_profile).post(create_student_profile))
-        .route("/profile/faculty", get(get_faculty_profile).post(create_faculty_profile))
+        .route(
+            "/profile/student",
+            get(get_student_profile).post(create_student_profile),
+        )
+        .route(
+            "/profile/faculty",
+            get(get_faculty_profile).post(create_faculty_profile),
+        )
         .route(
             "/profile/photo",
             get(get_profile_photo).post(set_profile_photo),
@@ -130,8 +139,14 @@ pub fn setup_routes() -> Router<SiteState> {
                 .delete(remove_event_team_attendance),
         )
         .route("/event/photo", get(get_event_photo).post(set_event_photo))
-        .route("/event/join/individual", post(join_event_individual).delete(leave_event_individual))
-        .route("/event/join/team", post(join_event_team).delete(leave_event_individual))
+        .route(
+            "/event/join/individual",
+            post(join_event_individual).delete(leave_event_individual),
+        )
+        .route(
+            "/event/join/team",
+            post(join_event_team).delete(leave_event_individual),
+        )
         .route("/event/joined/individual", get(joined_events_individual))
         .route(
             "/workshop",
@@ -153,7 +168,10 @@ pub fn setup_routes() -> Router<SiteState> {
             "/workshop/attendance",
             get(get_workshop_attendance).post(mark_workshop_attendance),
         )
-        .route("/workshop/joined/individual", get(joined_workshops_individual))
+        .route(
+            "/workshop/joined/individual",
+            get(joined_workshops_individual),
+        )
         .route(
             "/team",
             get(get_teams)
