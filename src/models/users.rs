@@ -97,8 +97,8 @@ impl User {
                             return false;
                         }
                     }
-                } */
-            }
+                } 
+            }*/
         }
     }
     pub async fn send_verification_email(
@@ -162,7 +162,6 @@ impl User {
             }
         }
     }
-}
 
 #[async_trait]
 impl<'a> FromRequestParts<SiteState> for User {
