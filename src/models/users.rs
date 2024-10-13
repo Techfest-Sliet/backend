@@ -74,7 +74,8 @@ impl User {
         if let Some((_, "sliet.ac.in")) = self.email.trim_ascii().rsplit_once('@') {
             true
         } else {
-            match self.role {
+            true
+            /* match self.role {
                 Role::SUPER_ADMIN => true,
                 Role::STUDENT_COORDINATOR => true,
                 Role::FACULTY_COORDINATOR => true,
@@ -96,7 +97,7 @@ impl User {
                             return false;
                         }
                     }
-                }
+                } */
             }
         }
     }
