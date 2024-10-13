@@ -162,6 +162,7 @@ impl User {
             }
         }
     }
+}
 
 #[async_trait]
 impl<'a> FromRequestParts<SiteState> for User {
