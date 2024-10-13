@@ -407,7 +407,7 @@ pub async fn send_team_request(
     .map(|_| ())
     .map_err(|e| {
         log::error!("{e:?}");
-        StatusCode::UNAUTHORIZED
+        StatusCode::CONFLICT
     })
 }
 
