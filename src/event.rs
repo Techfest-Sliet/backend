@@ -30,7 +30,7 @@ use crate::{
     schema::{
         domains, events, faculty_coordinators, individual_event_participation,
         student_domain_coordinators, student_event_coordinators, students,
-        team_event_participations, team_members, users,
+        team_event_participations, team_members, teams, users,
     },
     state::SiteState,
 };
@@ -1064,6 +1064,27 @@ pub async fn joined_events_individual(
         .inner_join(events::table)
         .select(Event::as_select())
         .filter(individual_event_participation::user_id.eq(user.id))
+        .load(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::NOT_MODIFIED
+        })
+        .map(|v| Json(v))
+}
+
+pub async fn joined_events_team(
+    State(state): State<SiteState>,
+    user: User,
+) -> Result<Json<Vec<Event>>, StatusCode> {
+    team_event_participations::table
+        .inner_join(teams::table.inner_join(team_members::table))
+        .inner_join(events::table)
+        .select(Event::as_select())
+        .filter(team_members::student_id.eq(user.id))
+        .distinct()
         .load(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
