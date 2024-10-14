@@ -15,12 +15,10 @@ use tokio_util::io::ReaderStream;
 
 use crate::{
     forms::{
-        domains::GetDomainEvent,
-        events::{
+        domains::GetDomainEvent, events::{
             AddEventStudentCoordinator, ChangeEvent, CreateEvent, DeleteEvent, EventId,
             EventIndividualAttendance, EventTeamAttendance, GetEventStudentCoordinator,
-        },
-        users::Profile,
+        }, teams::TeamId, users::Profile
     },
     models::{
         events::Event,
@@ -1078,9 +1076,11 @@ pub async fn joined_events_individual(
 pub async fn joined_events_team(
     State(state): State<SiteState>,
     user: User,
+    Query(data): Query<TeamId>,
 ) -> Result<Json<Vec<Event>>, StatusCode> {
     team_event_participations::table
         .inner_join(teams::table.inner_join(team_members::table))
+        .filter(teams::id.eq(data.id))
         .inner_join(events::table)
         .select(Event::as_select())
         .filter(team_members::student_id.eq(user.id))
