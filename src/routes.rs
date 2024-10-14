@@ -28,6 +28,7 @@ use crate::event::join_event_team;
 use crate::event::joined_events_individual;
 use crate::event::joined_events_team;
 use crate::event::leave_event_individual;
+use crate::event::leave_event_team;
 use crate::event::mark_event_individual_attendance;
 use crate::event::mark_event_team_attendance;
 use crate::event::remove_event_individual_attendance;
@@ -146,7 +147,7 @@ pub fn setup_routes() -> Router<SiteState> {
         )
         .route(
             "/event/join/team",
-            post(join_event_team).delete(leave_event_individual),
+            post(join_event_team).delete(leave_event_team),
         )
         .route("/event/joined/individual", get(joined_events_individual))
         .route("/event/joined/team", get(joined_events_team))
