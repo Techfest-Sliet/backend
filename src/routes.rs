@@ -17,6 +17,7 @@ use crate::event::add_event_coordinator;
 use crate::event::change_event;
 use crate::event::create_event;
 use crate::event::delete_event;
+use crate::event::event_domain;
 use crate::event::get_event;
 use crate::event::get_event_coordinator;
 use crate::event::get_event_individual_attendance;
@@ -140,6 +141,7 @@ pub fn setup_routes() -> Router<SiteState> {
                 .post(mark_event_team_attendance)
                 .delete(remove_event_team_attendance),
         )
+            .route("/event/domain", get(event_domain))
         .route("/event/photo", get(get_event_photo).post(set_event_photo))
         .route(
             "/event/join/individual",

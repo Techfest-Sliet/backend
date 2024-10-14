@@ -15,15 +15,16 @@ use tokio_util::io::ReaderStream;
 
 use crate::{
     forms::{
-        domains::GetDomainEvent, events::{
+        domains::GetDomainEvent,
+        events::{
             AddEventStudentCoordinator, ChangeEvent, CreateEvent, DeleteEvent, EventId,
             EventIndividualAttendance, EventTeamAttendance, GetEventStudentCoordinator,
-        }, teams::TeamId, users::Profile
+        },
+        teams::TeamId,
+        users::Profile,
     },
     models::{
-        events::Event,
-        students::{Student, StudentResponse},
-        users::{Role, User},
+        domains::Domain, events::Event, students::{Student, StudentResponse}, users::{Role, User}
     },
     schema::{
         domains, events, faculty_coordinators, individual_event_participation,
@@ -1086,6 +1087,25 @@ pub async fn joined_events_team(
         .filter(team_members::student_id.eq(user.id))
         .distinct()
         .load(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::NOT_MODIFIED
+        })
+        .map(|v| Json(v))
+}
+
+pub async fn event_domain(
+    State(state): State<SiteState>,
+    Query(data): Query<EventId>,
+) -> Result<Json<Domain>, StatusCode> {
+    events::table
+        .inner_join(domains::table)
+        .select(Domain::as_select())
+        .filter(events::id.eq(data.id))
+        .get_result(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
         })?)
