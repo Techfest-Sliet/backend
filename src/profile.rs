@@ -233,11 +233,7 @@ pub async fn reset_password(
             log::error!("{e:?}");
             StatusCode::UNAUTHORIZED
         })?;
-    let valid_verification_claims: u64 = VerificationClaims {
-        id: user.id,
-        pass_hash: user.password_hash,
-    }
-    .into();
+    let valid_verification_claims: u64 = ResetClaims::from(&user).into();
     if data.token != valid_verification_claims {
         return Err(StatusCode::UNAUTHORIZED);
     }
