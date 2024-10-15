@@ -168,7 +168,7 @@ pub fn setup_routes() -> Router<SiteState> {
             "/workshop/photo",
             get(get_workshop_photo).post(set_workshop_photo),
         )
-        .route("/workshop/join", post(join_workshop))
+        .route("/workshop/join", post(join_workshop).delete(leave_workshop_individual))
         .route(
             "/workshop/attendance",
             get(get_workshop_attendance).post(mark_workshop_attendance),

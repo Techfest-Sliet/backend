@@ -698,6 +698,28 @@ pub async fn remove_workshop_individual_attendance(
         })
 }
 
+pub async fn leave_workshop_individual(
+    State(state): State<SiteState>,
+    user: User,
+    Form(data): Form<WorkshopId>,
+) -> Result<(), StatusCode> {
+    if !user.verified || !user.is_payment_done(&state.connection) {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
+    diesel::delete(workshop_participation::table)
+        .filter(workshop_participation::user_id.eq(user.id))
+        .filter(workshop_participation::workshop_id.eq(data.id))
+        .execute(&mut state.connection.get().map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?)
+        .map_err(|e| {
+            log::error!("{e:?}");
+            StatusCode::NOT_MODIFIED
+        })
+        .map(|_| ())
+}
+
 pub async fn join_workshop(
     State(state): State<SiteState>,
     user: User,
