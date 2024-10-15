@@ -235,6 +235,7 @@ pub async fn reset_password(
         })?;
     let valid_verification_claims: u64 = ResetClaims::from(&user).into();
     if data.token != valid_verification_claims {
+        log::error!("Password reset tokens do not match");
         return Err(StatusCode::UNAUTHORIZED);
     }
 
