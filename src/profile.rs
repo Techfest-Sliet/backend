@@ -250,6 +250,7 @@ pub async fn reset_password(
         })?;
     diesel::update(users::table)
         .set(users::password_hash.eq(password_hash))
+        .filter(users::id.eq(user.id))
         .execute(&mut state.connection.get().map_err(|e| {
             log::error!("{e:?}");
             StatusCode::INTERNAL_SERVER_ERROR
